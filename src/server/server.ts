@@ -1,5 +1,5 @@
 import express from 'express';
-import timeRoutes from '../routes/timeRoutes';
+import timeRoutes from './routes/timeRoutes';
 import dotenv from 'dotenv';
 
 dotenv.config();
