@@ -7,16 +7,51 @@ interface TimeData {
   timezone: string;
   offset: string;
   time: string;
+  meridiem: string;
   week: string;
   date: string;
   month: string;
 }
 
-const Timezone = () => {
-  const [timeData, setTimeData] = useState<TimeData | null>(null);
-  const [loading, setLoading] = useState(true);
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+};
 
+const formatDate = (date: Date) => {
+  return {
+    week: date.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase(),
+    date: date.getDate().toString(),
+    month: date.toLocaleDateString('en-US', { month: 'short' }).toLowerCase(),
+    meridiem: date.getHours() < 12 ? 'AM' : 'PM',
+  };
+};
+
+const Timezone = () => {
+  const [timeData, setTimeData] = useState<TimeData>({
+    city: 'Tokyo',
+    timezone: '',
+    offset: '',
+    time: '',
+    meridiem: '',
+    week: '',
+    date: '',
+    month: '',
+  });
+  const [loading, setLoading] = useState(true); // 保留 loading 状态
+  const [lastFetched, setLastFetched] = useState<number>(0); // 缓存上次请求时间的时间戳
+
+  // 获取初始数据并更新
   const fetchTimeData = async () => {
+    const now = Date.now();
+    if (now - lastFetched < 30000) {
+      // 如果上次获取数据的时间距离现在小于 30 秒，则不发送请求
+      return;
+    }
+
     try {
       const response = await fetch(
         `https://api.timezonedb.com/v2.1/get-time-zone?key=${
@@ -24,79 +59,57 @@ const Timezone = () => {
         }&format=json&by=zone&zone=Asia/Tokyo`
       );
       const data = await response.json();
-      const now = new Date(data.formatted);
+      const nowTime = new Date(data.formatted);
 
-      setTimeData({
-        city: 'Tokyo',
+      setTimeData((prev) => ({
+        ...prev,
         timezone: data.abbreviation.toLowerCase(),
         offset: `utc${data.gmtOffset / 3600}`,
-        time: now.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
-        week: now
-          .toLocaleDateString('en-US', { weekday: 'short' })
-          .toLowerCase(),
-        date: now.getDate().toString(),
-        month: now
-          .toLocaleDateString('en-US', { month: 'short' })
-          .toLowerCase(),
-      });
+        ...formatDate(nowTime),
+        time: formatTime(nowTime),
+      }));
+      setLastFetched(now); // 更新最后一次请求的时间
     } catch (error) {
       console.error('Failed to fetch time data:', error);
     } finally {
-      setLoading(false);
+      setLoading(false); // 数据加载完成后将 loading 设置为 false
     }
   };
 
-  // 定时更新时间
   useEffect(() => {
-    fetchTimeData(); // 首次获取数据
+    fetchTimeData(); // 初次获取数据
     const intervalId = setInterval(() => {
-      const now = new Date();
-      setTimeData((prev) => ({
-        ...prev!, // 保持之前的数据
-        time: now.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }), // 更新时间
-        week: now
-          .toLocaleDateString('en-US', { weekday: 'short' })
-          .toLowerCase(),
-        date: now.getDate().toString(),
-        month: now
-          .toLocaleDateString('en-US', { month: 'short' })
-          .toLowerCase(),
-      }));
-    }, 1000); // 每秒更新时间
+      fetchTimeData(); // 定时检查并请求数据
+    }, 1000); // 每秒调用，但只有在上次请求后 30 秒才真正请求数据
 
     return () => clearInterval(intervalId); // 清除定时器
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  }, [lastFetched]);
 
   return (
     <div className="timezone">
       <div className="timezone-inner">
-        <div className="timezone__location">{timeData?.city}</div>
-        <div className="timezone__time">{timeData?.time}</div>
-        <div className="timezone-footer">
-          <p>
-            <span className="timezone__tz">{timeData?.timezone}</span>
-            <span className="timezone__offset">{timeData?.offset}</span>
-          </p>
-          <p>
-            <span className="timezone__week">{timeData?.week}</span>
-            <span>
-              <span className="timezone__date">{timeData?.date}</span>
-              <span className="timezone__month">{timeData?.month}</span>
-            </span>
-          </p>
-        </div>
+        {loading ? (
+          <div className="loading">Loading...</div> // 渲染加载动画
+        ) : (
+          <>
+            <div className="timezone__location">{timeData.city}</div>
+            <div className="timezone__time">{timeData.time}</div>
+            <div className="timezone__meridiem">{timeData.meridiem}</div>
+            <div className="timezone-footer">
+              <p>
+                <span className="timezone__tz">{timeData.timezone}</span>
+                <span className="timezone__offset">{timeData.offset}</span>
+              </p>
+              <p>
+                <span className="timezone__week">{timeData.week}</span>
+                <span>
+                  <span className="timezone__date">{timeData.date}</span>
+                  <span className="timezone__month">{timeData.month}</span>
+                </span>
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

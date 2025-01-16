@@ -5,4 +5,13 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   envPrefix: 'VITE_',
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://api.timezonedb.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 });
