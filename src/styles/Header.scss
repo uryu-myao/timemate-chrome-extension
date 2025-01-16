@@ -1,0 +1,35 @@
+.header {
+  width: 420px;
+  height: auto;
+  z-index: 2;
+
+  &-inner {
+    height: 60px;
+    padding: 0 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: hsla(229, 100%, 77%, 0.05);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 5px hsla(0, 0%, 10%, 0.05);
+  }
+
+  &__logo {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: #fff;
+  }
+
+  &-btns {
+    display: flex;
+    gap: 10px;
+  }
+
+  &__btn {
+    width: 30px;
+    height: 30px;
+    background: #7269dc;
+    border-radius: 50%;
+  }
+}
