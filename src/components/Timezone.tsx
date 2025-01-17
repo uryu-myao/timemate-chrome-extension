@@ -44,16 +44,8 @@ const Timezone = () => {
     month: '',
   });
   const [loading, setLoading] = useState(true); // 保留 loading 状态
-  const [lastFetched, setLastFetched] = useState<number>(0); // 缓存上次请求时间的时间戳
 
-  // 获取初始数据并更新
   const fetchTimeData = async () => {
-    const now = Date.now();
-    if (now - lastFetched < 30000) {
-      // 如果上次获取数据的时间距离现在小于 30 秒，则不发送请求
-      return;
-    }
-
     try {
       const response = await fetch(
         `https://api.timezonedb.com/v2.1/get-time-zone?key=${
@@ -61,42 +53,41 @@ const Timezone = () => {
         }&format=json&by=zone&zone=Asia/Tokyo`
       );
       const data = await response.json();
-      const nowTime = new Date(data.formatted);
-
-      setTimeData((prev) => ({
-        ...prev,
+      const now = new Date(data.formatted);
+      setTimeData({
+        city: 'Tokyo',
         timezone: data.abbreviation.toLowerCase(),
         offset: `utc${data.gmtOffset / 3600}`,
-        ...formatDate(nowTime),
-        time: formatTime(nowTime),
-      }));
-      setLastFetched(now); // 更新最后一次请求的时间
+        time: formatTime(now),
+        second: now.getSeconds().toString().padStart(2, '0'),
+        ...formatDate(now),
+      });
     } catch (error) {
       console.error('Failed to fetch time data:', error);
     } finally {
-      setLoading(false); // 数据加载完成后将 loading 设置为 false
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTimeData();
+    fetchTimeData(); // 初次获取数据
     const intervalId = setInterval(() => {
       const nowTime = new Date();
       setTimeData((prev) => ({
         ...prev,
         time: formatTime(nowTime),
+        second: nowTime.getSeconds().toString().padStart(2, '0'),
         ...formatDate(nowTime),
-        second: nowTime.getSeconds().toString().padStart(2, '0'), // 更新秒数
       }));
     }, 1000);
     return () => clearInterval(intervalId);
-  }, [lastFetched]);
+  }, []);
 
   return (
     <div className="timezone">
       <div className="timezone-inner">
         {loading ? (
-          <div className="loading">Loading...</div> // 渲染加载动画
+          <div className="loading">Loading...</div>
         ) : (
           <>
             <div className="timezone__location">{timeData.city}</div>
