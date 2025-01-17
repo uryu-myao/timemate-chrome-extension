@@ -14,7 +14,7 @@
       'local time' auto
       'footer footer' 30px / 1fr 1fr;
     gap: 10px;
-    padding-top: 18px;
+    padding-top: 6px;
   }
 
   &__location {
@@ -27,7 +27,7 @@
     display: flex;
     align-items: center;
     padding-left: 12px;
-    padding-top: 4px;
+    padding-top: 8px;
   }
 
   &__time {
@@ -39,20 +39,31 @@
     font-style: normal;
     display: flex;
     justify-content: flex-end;
-    padding-right: 12px;
+    padding-right: 30px;
   }
 
   &__meridiem {
     color: #ee9d00;
     position: absolute;
     font-family: 'Poppins', serif;
-    font-weight: 400;
+    font-weight: 600;
     font-style: normal;
-    font-size: 14px;
+    font-size: 11px;
     text-transform: uppercase;
     margin: 0;
-    top: 6px;
-    right: 15px;
+    top: 16px;
+    right: 6px;
+  }
+
+  &__second {
+    position: absolute;
+    top: 50px;
+    right: 6px;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    font-style: normal;
   }
 
   &-footer {

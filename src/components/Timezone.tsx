@@ -7,6 +7,7 @@ interface TimeData {
   timezone: string;
   offset: string;
   time: string;
+  second: string;
   meridiem: string;
   week: string;
   date: string;
@@ -36,6 +37,7 @@ const Timezone = () => {
     timezone: '',
     offset: '',
     time: '',
+    second: '',
     meridiem: '',
     week: '',
     date: '',
@@ -77,12 +79,17 @@ const Timezone = () => {
   };
 
   useEffect(() => {
-    fetchTimeData(); // 初次获取数据
+    fetchTimeData();
     const intervalId = setInterval(() => {
-      fetchTimeData(); // 定时检查并请求数据
-    }, 1000); // 每秒调用，但只有在上次请求后 30 秒才真正请求数据
-
-    return () => clearInterval(intervalId); // 清除定时器
+      const nowTime = new Date();
+      setTimeData((prev) => ({
+        ...prev,
+        time: formatTime(nowTime),
+        ...formatDate(nowTime),
+        second: nowTime.getSeconds().toString().padStart(2, '0'), // 更新秒数
+      }));
+    }, 1000);
+    return () => clearInterval(intervalId);
   }, [lastFetched]);
 
   return (
@@ -95,6 +102,7 @@ const Timezone = () => {
             <div className="timezone__location">{timeData.city}</div>
             <div className="timezone__time">{timeData.time}</div>
             <div className="timezone__meridiem">{timeData.meridiem}</div>
+            <div className="timezone__second">{timeData.second}</div>
             <div className="timezone-footer">
               <p>
                 <span className="timezone__tz">{timeData.timezone}</span>
