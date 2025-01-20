@@ -90,20 +90,20 @@ const Timezone = () => {
           <div className="loading">Loading...</div>
         ) : (
           <>
-            <div className="timezone__location">{timeData.city}</div>
-            <div className="timezone__time">{timeData.time}</div>
-            <div className="timezone__meridiem">{timeData.meridiem}</div>
-            <div className="timezone__second">{timeData.second}</div>
+            <div className="timezone-data__location">{timeData.city}</div>
+            <div className="timezone-data__time">{timeData.time}</div>
+            <div className="timezone-data__meridiem">{timeData.meridiem}</div>
+            <div className="timezone-data__second">{timeData.second}</div>
             <div className="timezone-footer">
               <p>
-                <span className="timezone__tz">{timeData.timezone}</span>
-                <span className="timezone__offset">{timeData.offset}</span>
+                <span className="timezone-data__tz">{timeData.timezone}</span>
+                <span className="timezone-data__offset">{timeData.offset}</span>
               </p>
               <p>
-                <span className="timezone__week">{timeData.week}</span>
+                <span className="timezone-data__week">{timeData.week}</span>
                 <span>
-                  <span className="timezone__date">{timeData.date}</span>
-                  <span className="timezone__month">{timeData.month}</span>
+                  <span className="timezone-data__date">{timeData.date}</span>
+                  <span className="timezone-data__month">{timeData.month}</span>
                 </span>
               </p>
             </div>

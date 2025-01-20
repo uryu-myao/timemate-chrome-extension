@@ -17,59 +17,10 @@
     padding-top: 6px;
   }
 
-  &__location {
-    grid-area: local;
-    font-family: 'Poppins', serif;
-    font-size: 28px;
-    font-weight: 400;
-    font-style: normal;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    padding-left: 12px;
-    padding-top: 8px;
-  }
-
-  &__time {
-    grid-area: time;
-    font-family: 'Lato', sans-serif;
-    font-size: 58px;
-    font-weight: 400;
-    letter-spacing: 1px;
-    font-style: normal;
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 30px;
-  }
-
-  &__meridiem {
-    color: #ee9d00;
-    position: absolute;
-    font-family: 'Poppins', serif;
-    font-weight: 600;
-    font-style: normal;
-    font-size: 11px;
-    text-transform: uppercase;
-    margin: 0;
-    top: 16px;
-    right: 6px;
-  }
-
-  &__second {
-    position: absolute;
-    top: 50px;
-    right: 6px;
-    font-family: 'Lato', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.8px;
-    font-style: normal;
-  }
-
   &-footer {
     color: #ee9d00;
     background-color: #f8f5eb;
-    padding: 0 18px;
+    padding: 0 var(--container-padding-horizontal);
     grid-area: footer;
     display: flex;
     justify-content: space-between;
@@ -87,47 +38,98 @@
     }
   }
 
-  &__tz {
-    position: relative;
-    padding-right: 10px;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      right: -2px;
-      transform: translateY(-50%);
-      width: 2px;
-      height: 64%;
-      background-color: hsla(0, 0%, 0%, 0.1);
+  &-data {
+    &__location {
+      grid-area: local;
+      font-family: 'Poppins', serif;
+      font-size: 28px;
+      font-weight: 400;
+      font-style: normal;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+      padding-top: 8px;
     }
-  }
 
-  &__offset {
-    padding-left: 10px;
-  }
-
-  &__week {
-    position: relative;
-    padding-right: 10px;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      right: -2px;
-      transform: translateY(-50%);
-      width: 2px;
-      height: 64%;
-      background-color: hsla(0, 0%, 0%, 0.1);
+    &__time {
+      grid-area: time;
+      font-family: 'Lato', sans-serif;
+      font-size: 58px;
+      font-weight: 400;
+      letter-spacing: 1px;
+      font-style: normal;
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 30px;
     }
-  }
 
-  &__date {
-    padding-left: 10px;
-  }
+    &__meridiem {
+      color: #ee9d00;
+      position: absolute;
+      font-family: 'Poppins', serif;
+      font-weight: 600;
+      font-style: normal;
+      font-size: 11px;
+      text-transform: uppercase;
+      margin: 0;
+      top: 17px;
+      right: 6px;
+    }
 
-  &__month {
-    padding-left: 2px;
+    &__second {
+      position: absolute;
+      top: 50px;
+      right: 6px;
+      font-family: 'Lato', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      font-style: normal;
+    }
+
+    &__tz {
+      position: relative;
+      padding-right: 10px;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -2px;
+        transform: translateY(-50%);
+        width: 2px;
+        height: 64%;
+        background-color: hsla(0, 0%, 0%, 0.1);
+      }
+    }
+
+    &__offset {
+      padding-left: 10px;
+    }
+
+    &__week {
+      position: relative;
+      padding-right: 10px;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -2px;
+        transform: translateY(-50%);
+        width: 2px;
+        height: 64%;
+        background-color: hsla(0, 0%, 0%, 0.1);
+      }
+    }
+
+    &__date {
+      padding-left: 10px;
+    }
+
+    &__month {
+      padding-left: 2px;
+    }
   }
 }

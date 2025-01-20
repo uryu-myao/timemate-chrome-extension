@@ -5,7 +5,7 @@
 
   &-inner {
     height: 60px;
-    padding: 0 18px;
+    padding: 0 var(--container-padding-horizontal);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -14,7 +14,7 @@
     box-shadow: 0 4px 5px hsla(0, 0%, 10%, 0.05);
   }
 
-  &__logo {
+  &-logo {
     width: 26px;
     height: 26px;
     border-radius: 50%;
@@ -26,7 +26,7 @@
     gap: 10px;
   }
 
-  &__btn {
+  &-btn {
     width: 30px;
     height: 30px;
     background: #7269dc;
