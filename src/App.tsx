@@ -1,7 +1,7 @@
 import Header from './components/Header';
 import Timezone from './components/Timezone';
-import './styles/_reset.css';
-import './styles/main.scss';
+import '@styles/_reset.css';
+import '@styles/main.scss';
 
 function App() {
   return (

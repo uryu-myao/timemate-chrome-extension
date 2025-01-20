@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import '../styles/_reset.css';
-import '../styles/Timezone.scss';
+import '@styles/_reset.css';
+import '@styles/Timezone.scss';
 
 interface TimeData {
   city: string;

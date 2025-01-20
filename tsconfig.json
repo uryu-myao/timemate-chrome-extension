@@ -9,13 +9,12 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": "./src",
+    "baseUrl": "./src",
     "resolveJsonModule": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@types": ["./src/types/*"],
-      "@constants": ["./src/constants/*"],
-      "@components/*": ["./src/components/*"],
-      "@styles/*": ["./src/styles/*"]
+      "@/*": ["*"],
+      "@components/*": ["components/*"],
+      "@styles/*": ["styles/*"]
     }
   },
   "files": [],
