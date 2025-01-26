@@ -12,6 +12,8 @@ interface TimeData {
   week: string;
   date: string;
   month: string;
+  sunrise: string;
+  sunset: string;
 }
 
 const formatTime = (date: Date) => {
@@ -31,6 +33,15 @@ const formatDate = (date: Date) => {
   };
 };
 
+const parseTime = (timeString: string) => {
+  if (!timeString || typeof timeString !== 'string') {
+    throw new Error('Invalid time string');
+  }
+
+  const [hours, minutes, seconds] = timeString.split(':').map(Number);
+  return new Date().setHours(hours, minutes, seconds || 0);
+};
+
 const Timezone = () => {
   const [timeData, setTimeData] = useState<TimeData>({
     city: 'Tokyo',
@@ -42,35 +53,47 @@ const Timezone = () => {
     week: '',
     date: '',
     month: '',
+    sunrise: '',
+    sunset: '',
   });
   const [loading, setLoading] = useState(true); // 保留 loading 状态
-
-  const fetchTimeData = async () => {
-    try {
-      const response = await fetch(
-        `https://api.timezonedb.com/v2.1/get-time-zone?key=${
-          import.meta.env.VITE_TIMEZONE_API_KEY
-        }&format=json&by=zone&zone=Asia/Tokyo`
-      );
-      const data = await response.json();
-      const now = new Date(data.formatted);
-      setTimeData({
-        city: 'Tokyo',
-        timezone: data.abbreviation.toLowerCase(),
-        offset: `utc${data.gmtOffset / 3600}`,
-        time: formatTime(now),
-        second: now.getSeconds().toString().padStart(2, '0'),
-        ...formatDate(now),
-      });
-    } catch (error) {
-      console.error('Failed to fetch time data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [isDay, setIsDay] = useState(true);
 
   useEffect(() => {
+    const fetchTimeData = async () => {
+      try {
+        const response = await fetch(
+          `https://api.timezonedb.com/v2.1/get-time-zone?key=${
+            import.meta.env.VITE_TIMEZONE_API_KEY
+          }&format=json&by=zone&zone=Asia/Tokyo`
+        );
+        const data = await response.json();
+        console.log('Fetched time data:', data); // 确保数据正确获取
+
+        const now = new Date(data.formatted);
+        const sunrise = parseTime(data.sunrise);
+        const sunset = parseTime(data.sunset);
+        setIsDay(now.getTime() >= sunrise && now.getTime() < sunset);
+
+        setTimeData({
+          city: 'Tokyo',
+          timezone: data.abbreviation,
+          offset: `utc${data.gmtOffset / 3600}`,
+          time: formatTime(now),
+          second: now.getSeconds().toString().padStart(2, '0'),
+          ...formatDate(now),
+          sunrise: data.sunrise,
+          sunset: data.sunset,
+        });
+      } catch (error) {
+        console.error('Failed to fetch time data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchTimeData(); // 初次获取数据
+
     const intervalId = setInterval(() => {
       const nowTime = new Date();
       setTimeData((prev) => ({
@@ -79,12 +102,28 @@ const Timezone = () => {
         second: nowTime.getSeconds().toString().padStart(2, '0'),
         ...formatDate(nowTime),
       }));
+      setIsDay(
+        nowTime.getTime() >= parseTime(timeData.sunrise) &&
+          nowTime.getTime() < parseTime(timeData.sunset)
+      );
     }, 1000);
+
     return () => clearInterval(intervalId);
-  }, []);
+  }, [timeData.sunrise, timeData.sunset]); // 注意这里依赖的是 timeData.sunrise 和 timeData.sunset
+
+  const theme = document.documentElement.getAttribute('data-theme');
+  const timezoneClass = `timezone ${
+    theme === 'light'
+      ? isDay
+        ? 'sunrise-light'
+        : 'sunset-light'
+      : isDay
+      ? 'sunrise-dark'
+      : 'sunset-dark'
+  }`;
 
   return (
-    <div className="timezone">
+    <div className={timezoneClass}>
       <div className="timezone-inner">
         {loading ? (
           <div className="loading">Loading...</div>
@@ -96,8 +135,12 @@ const Timezone = () => {
             <div className="timezone-data__second">{timeData.second}</div>
             <div className="timezone-footer">
               <p>
-                <span className="timezone-data__tz">{timeData.timezone}</span>
-                <span className="timezone-data__offset">{timeData.offset}</span>
+                <span className="timezone-data__tz">
+                  {timeData.timezone || 'N/A'}
+                </span>
+                <span className="timezone-data__offset">
+                  {timeData.offset || 'N/A'}
+                </span>
               </p>
               <p>
                 <span className="timezone-data__week">{timeData.week}</span>

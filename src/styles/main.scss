@@ -2,7 +2,7 @@
   position: relative;
   width: 420px;
   height: 540px;
-  background: #eeedf6;
+  background: var(--color-dashboard-bg);
 
   &-content {
     height: calc(100% - 60px);
