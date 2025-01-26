@@ -31,15 +31,6 @@ const formatDate = (date: Date) => {
   };
 };
 
-const parseTime = (timeString: string) => {
-  if (!timeString || typeof timeString !== 'string') {
-    throw new Error('Invalid time string');
-  }
-
-  const [hours, minutes, seconds] = timeString.split(':').map(Number);
-  return new Date().setHours(hours, minutes, seconds || 0);
-};
-
 const Timezone = () => {
   const [timeData, setTimeData] = useState<TimeData>({
     city: 'Tokyo',
@@ -90,9 +81,10 @@ const Timezone = () => {
       }));
     }, 1000);
     return () => clearInterval(intervalId);
+  }, []);
 
   return (
-    <div className={timezoneClass}>
+    <div className="timezone">
       <div className="timezone-inner">
         {loading ? (
           <div className="loading">Loading...</div>

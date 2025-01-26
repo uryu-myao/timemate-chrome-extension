@@ -9,7 +9,6 @@ function App() {
       <Header />
       <div className="app-content">
         <Timezone />
-        <Timezone />
       </div>
     </div>
   );
