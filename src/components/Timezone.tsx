@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import '@styles/_reset.css';
 import '@styles/Timezone.scss';
+import SettingButton from './SettingButton';
+import PinButton from './PinButton';
+import DeleteButton from './DeleteButton';
 
 interface TimeData {
   city: string;
@@ -44,6 +47,11 @@ const Timezone = () => {
     month: '',
   });
   const [loading, setLoading] = useState(true); // 保留 loading 状态
+  const [Setting, setSetting] = useState(false); // 是否移动状态
+
+  const toggleSetting = () => {
+    setSetting((prev) => !prev); // 切换移动状态
+  };
 
   const fetchTimeData = async () => {
     try {
@@ -84,7 +92,7 @@ const Timezone = () => {
   }, []);
 
   return (
-    <div className="timezone">
+    <div className={`timezone ${Setting ? 'setting' : ''}`}>
       <div className="timezone-inner">
         {loading ? (
           <div className="loading">Loading...</div>
@@ -109,6 +117,11 @@ const Timezone = () => {
             </div>
           </>
         )}
+      </div>
+      <SettingButton onClick={toggleSetting} />
+      <div className="timezone-btn">
+        <PinButton />
+        <DeleteButton />
       </div>
     </div>
   );
