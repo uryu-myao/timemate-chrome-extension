@@ -115,7 +115,7 @@
   &-footer {
     color: var(--color-secondary);
     background-color: var(--color-gray);
-    padding: 0 var(--container-padding-horizontal);
+    padding: 0 var(--container-padding-horizontal) 0 15px;
     grid-area: footer;
     display: flex;
     justify-content: space-between;
@@ -197,10 +197,6 @@
         height: 64%;
         background-color: var(--color-division);
       }
-    }
-
-    &__offset {
-      padding-left: 10px;
     }
 
     &__week {
