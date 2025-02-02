@@ -12,8 +12,9 @@ export interface TimezoneInfo {
 }
 
 interface TimezoneProps extends TimezoneInfo {
-  setting: boolean;
-  toggleSetting: (id: string) => void;
+  setting: boolean; // 当前是否处于设置状态，由父组件控制
+  toggleSetting: (id: string) => void; // 切换设置状态的回调
+  deleteTimezone: () => void; // 删除该 Timezone 的回调
 }
 
 interface TimeData {
@@ -70,6 +71,7 @@ const Timezone: React.FC<TimezoneProps> = ({
   zone,
   setting,
   toggleSetting,
+  deleteTimezone,
 }) => {
   const [timeData, setTimeData] = useState<TimeData>({
     city,
@@ -156,10 +158,12 @@ const Timezone: React.FC<TimezoneProps> = ({
           </>
         )}
       </div>
+      {/* 点击 SettingButton 时调用传入的 toggleSetting 回调，并传递当前组件 id */}
       <SettingButton onClick={() => toggleSetting(id)} />
       <div className="timezone-btn">
         <PinButton />
-        <DeleteButton />
+        {/* 点击 DeleteButton 时调用传入的 deleteTimezone 回调 */}
+        <DeleteButton onClick={deleteTimezone} />
       </div>
     </div>
   );
