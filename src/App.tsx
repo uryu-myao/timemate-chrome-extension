@@ -1,5 +1,5 @@
 import Header from './components/Header';
-import Timezone from './components/Timezone';
+import TimezoneList from './components/TimezoneList';
 import '@styles/_reset.css';
 import '@styles/main.scss';
 
@@ -8,10 +8,7 @@ function App() {
     <div className="app">
       <Header />
       <div className="app-content">
-        <Timezone />
-        <Timezone />
-        <Timezone />
-        <Timezone />
+        <TimezoneList />
       </div>
     </div>
   );

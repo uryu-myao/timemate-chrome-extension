@@ -5,9 +5,19 @@ import SettingButton from './SettingButton';
 import PinButton from './PinButton';
 import DeleteButton from './DeleteButton';
 
+export interface TimezoneInfo {
+  id: string;
+  city: string;
+  zone: string;
+}
+
+interface TimezoneProps extends TimezoneInfo {
+  setting: boolean;
+  toggleSetting: (id: string) => void;
+}
+
 interface TimeData {
   city: string;
-  timezone: string;
   offset: string;
   time: string;
   second: string;
@@ -34,10 +44,35 @@ const formatDate = (date: Date) => {
   };
 };
 
-const Timezone = () => {
+/**
+ * 使用 Intl.DateTimeFormat 获取指定时区的偏移量字符串，
+ * 返回类似 "UTC+9" 或 "UTC-4"
+ */
+const getTimezoneOffsetString = (timeZone: string): string => {
+  try {
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      timeZoneName: 'longOffset',
+    });
+    const parts = formatter.formatToParts(now);
+    const tzName = parts.find((p) => p.type === 'timeZoneName')?.value;
+    return tzName ? tzName.replace('GMT', 'UTC').replace(':00', '') : 'N/A';
+  } catch (error) {
+    console.error('Error getting timezone offset:', error);
+    return 'N/A';
+  }
+};
+
+const Timezone: React.FC<TimezoneProps> = ({
+  id,
+  city,
+  zone,
+  setting,
+  toggleSetting,
+}) => {
   const [timeData, setTimeData] = useState<TimeData>({
-    city: 'Tokyo',
-    timezone: '',
+    city,
     offset: '',
     time: '',
     second: '',
@@ -46,41 +81,43 @@ const Timezone = () => {
     date: '',
     month: '',
   });
-  const [loading, setLoading] = useState(true); // 保留 loading 状态
-  const [Setting, setSetting] = useState(false); // 是否移动状态
-
-  const toggleSetting = () => {
-    setSetting((prev) => !prev); // 切换移动状态
-  };
-
-  const fetchTimeData = async () => {
-    try {
-      const response = await fetch(
-        `https://api.timezonedb.com/v2.1/get-time-zone?key=${
-          import.meta.env.VITE_TIMEZONE_API_KEY
-        }&format=json&by=zone&zone=Asia/Tokyo`
-      );
-      const data = await response.json();
-      const now = new Date(data.formatted);
-      setTimeData({
-        city: 'Tokyo',
-        timezone: data.abbreviation.toLowerCase(),
-        offset: `utc${data.gmtOffset / 3600}`,
-        time: formatTime(now),
-        second: now.getSeconds().toString().padStart(2, '0'),
-        ...formatDate(now),
-      });
-    } catch (error) {
-      console.error('Failed to fetch time data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchTimeData = async () => {
+      try {
+        const response = await fetch(
+          `https://timeapi.io/api/Time/current/zone?timeZone=${zone}`
+        );
+        const data = await response.json();
+        console.log('Fetched time data for', city, data);
+        // 使用当前时间的字符串表示，确保指定了目标时区
+        const nowString = new Date().toLocaleString('en-US', {
+          timeZone: zone,
+        });
+        const now = new Date(nowString);
+        const offset = getTimezoneOffsetString(data.timeZone);
+        setTimeData({
+          city,
+          offset,
+          time: formatTime(now),
+          second: now.getSeconds().toString().padStart(2, '0'),
+          ...formatDate(now),
+        });
+      } catch (error) {
+        console.error('Failed to fetch time data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchTimeData(); // 初次获取数据
     const intervalId = setInterval(() => {
-      const nowTime = new Date();
+      // 使用指定时区更新当前时间
+      const nowString = new Date().toLocaleString('en-US', {
+        timeZone: zone,
+      });
+      const nowTime = new Date(nowString);
       setTimeData((prev) => ({
         ...prev,
         time: formatTime(nowTime),
@@ -89,10 +126,10 @@ const Timezone = () => {
       }));
     }, 1000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [zone, city]);
 
   return (
-    <div className={`timezone ${Setting ? 'setting' : ''}`}>
+    <div className={`timezone ${setting ? 'setting' : ''}`}>
       <div className="timezone-inner">
         {loading ? (
           <div className="loading">Loading...</div>
@@ -104,8 +141,9 @@ const Timezone = () => {
             <div className="timezone-data__second">{timeData.second}</div>
             <div className="timezone-footer">
               <p>
-                <span className="timezone-data__tz">{timeData.timezone}</span>
-                <span className="timezone-data__offset">{timeData.offset}</span>
+                <span className="timezone-data__offset">
+                  {timeData.offset || 'N/A'}
+                </span>
               </p>
               <p>
                 <span className="timezone-data__week">{timeData.week}</span>
@@ -118,7 +156,7 @@ const Timezone = () => {
           </>
         )}
       </div>
-      <SettingButton onClick={toggleSetting} />
+      <SettingButton onClick={() => toggleSetting(id)} />
       <div className="timezone-btn">
         <PinButton />
         <DeleteButton />
