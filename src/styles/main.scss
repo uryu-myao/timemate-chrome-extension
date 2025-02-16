@@ -2,7 +2,7 @@
   position: relative;
   width: 420px;
   height: 540px;
-  background: var(--color-bg-dashborad);
+  background: var(--color-primary);
   overflow: hidden;
 
   &-content {
@@ -21,7 +21,7 @@
       bottom: 0;
       background: linear-gradient(
         0deg,
-        var(--color-filter) 0%,
+        var(--color-bg-info),
         var(--color-opacity) 100%
       );
       pointer-events: none;

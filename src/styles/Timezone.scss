@@ -9,11 +9,16 @@
     opacity: 0;
     position: absolute;
     display: block;
-    width: 21px;
-    height: 22px;
-    background-image: url('/icons/icon-setting.svg');
-    top: 4px;
-    left: 5px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--color-hover);
+    background-image: var(--icon-setting);
+    background-size: 15px;
+    background-position: center;
+    background-repeat: no-repeat;
+    top: 1px;
+    left: 1px;
     cursor: pointer;
     transition: all 0.3s ease-in-out;
     transform: rotate(-90deg);
@@ -48,9 +53,6 @@
       cursor: pointer;
       transition: all 0.3s ease-in-out;
 
-      &:hover {
-      }
-
       &::before {
         position: absolute;
         display: block;
@@ -64,7 +66,7 @@
 
     &__pin {
       position: relative;
-      background-color: var(--color-primary);
+      background-color: var(--color-pin);
 
       &::before {
         top: 0;
@@ -110,15 +112,15 @@
       'footer footer' 30px / 1fr 1fr;
     gap: 10px;
     padding-top: 6px;
-    background-color: var(--color-bg-timezone);
+    background-color: var(--color-primary);
     border-radius: 16px;
-    border: 4px solid var(--color-border);
+    border: 1px solid var(--color-border);
     overflow: hidden;
   }
 
   &-footer {
     color: var(--color-secondary);
-    background-color: var(--color-gray);
+    background-color: var(--color-bg-info);
     padding: 0 var(--container-padding-horizontal) 0 15px;
     grid-area: footer;
     display: flex;
@@ -148,7 +150,7 @@
       display: flex;
       align-items: center;
       padding-left: 12px;
-      padding-top: 8px;
+      padding-top: 12px;
     }
 
     &__time {

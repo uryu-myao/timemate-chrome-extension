@@ -56,9 +56,8 @@ const Header = () => {
             className="header-btn header-btn__plus"
             onClick={toggleSearch}></button>
           <button
-            className="header-btn header-btn__meridiem"
+            className="header-btn header-btn__theme"
             onClick={toggleTheme}></button>
-          <button className="header-btn header-btn__theme"></button>
         </div>
       </div>
       {showSearch && <Searchbar />}
