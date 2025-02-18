@@ -31,7 +31,6 @@
     height: 32px;
     background-color: var(--color-primary);
     border-radius: 50%;
-    background-size: 15px;
     background-position: center;
     background-repeat: no-repeat;
     transition: all 0.2s ease-in-out;
@@ -42,10 +41,18 @@
     }
 
     &__plus {
+      background-size: 15px;
       background-image: var(--icon-plus);
     }
     &__theme {
+      background-size: 15px;
       background-image: var(--icon-theme);
     }
+  }
+}
+
+[data-theme='dark'] {
+  .header-btn__theme {
+    background-size: 20px;
   }
 }
