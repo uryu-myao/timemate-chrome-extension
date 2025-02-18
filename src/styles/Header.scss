@@ -15,10 +15,13 @@
   }
 
   &-logo {
-    width: 26px;
-    height: 26px;
+    width: 29px;
+    height: 29px;
     border-radius: 50%;
-    background-color: #fff;
+    background-image: var(--logo);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
   }
 
   &-btns {
@@ -29,8 +32,8 @@
   &-btn {
     width: 32px;
     height: 32px;
-    background-color: var(--color-primary);
     border-radius: 50%;
+    background-color: var(--color-primary);
     background-position: center;
     background-repeat: no-repeat;
     transition: all 0.2s ease-in-out;
