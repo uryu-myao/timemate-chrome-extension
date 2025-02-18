@@ -5,6 +5,7 @@ import Timezone, { TimezoneInfo } from './Timezone';
 const initialTimezones: TimezoneInfo[] = [
   { id: 'tokyo', city: 'Tokyo', zone: 'Asia/Tokyo' },
   { id: 'newyork', city: 'New York', zone: 'America/New_York' },
+  { id: 'rome', city: 'Rome', zone: 'Europe/Rome' },
 ];
 
 const TimezoneList = () => {
