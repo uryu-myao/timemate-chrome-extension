@@ -92,7 +92,10 @@ const Timezone: React.FC<TimezoneProps> = ({
   }, [zone]);
 
   return (
-    <div className={`timezone ${setting ? 'setting' : ''}`}>
+    <div
+      className={`timezone ${setting ? 'setting' : ''} ${
+        isPinned ? 'pinned' : ''
+      }`}>
       <div className="timezone-inner">
         <div className="timezone-data__location">{timeData.city}</div>
         <div className="timezone-data__time">{timeData.time}</div>

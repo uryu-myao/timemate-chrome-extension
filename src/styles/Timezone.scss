@@ -242,3 +242,9 @@
     opacity: 0.35;
   }
 }
+
+.pinned {
+  .timezone-inner {
+    border: 1px solid var(--color-secondary);
+  }
+}
