@@ -1,30 +1,39 @@
-.header {
-  &-searchbar {
-    position: relative;
-    padding: 16px var(--container-padding-horizontal);
+.search {
+  &-inner {
+    position: absolute;
+    bottom: -60px;
+    width: 100%;
+  }
 
-    &::before {
-      content: '';
-      display: block;
-      position: absolute;
-      top: calc(50% - 1px);
-      transform: translateY(-50%);
-      left: 30px;
-      width: 32px;
-      height: 32px;
-      background-image: var(--icon-search);
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: auto;
-      z-index: 2;
+  &-input {
+    &__container {
+      position: relative;
+      width: 100%;
+      padding: 16px var(--container-padding-horizontal) 10px;
+
+      &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        top: 52%;
+        transform: translateY(-50%);
+        left: 30px;
+        width: 32px;
+        height: 32px;
+        background-image: var(--icon-search);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: auto;
+        z-index: 2;
+      }
     }
 
-    &__input {
+    &__field {
       color: var(--color-font-timezone);
       background-color: var(--color-bg-timezone);
       width: 100%;
       height: 50px;
-      border: 4px solid var(--color-primary);
+      border: 4px solid var(--color-secondary);
       border-radius: 25px;
       padding: 0 20px 0 44px;
       font-family: 'Poppins', serif;
@@ -43,5 +52,54 @@
         color: #a8a8a8;
       }
     }
+  }
+
+  &-results {
+    width: calc(100% - 28px - 8px);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0px 0;
+    border: 4px solid var(--color-secondary);
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  &-result {
+    overflow-y: scroll;
+    &__item {
+      color: var(--color-font-timezone);
+      font-family: 'Poppins', serif;
+      letter-spacing: 0.5px;
+      padding: 12px 20px;
+      transition: all 0.2s ease-in-out;
+
+      &:hover {
+        background-color: var(--color-hover);
+        cursor: pointer;
+      }
+
+      .city-name {
+        padding-right: 10px;
+        font-weight: 600;
+        font-size: 18px;
+      }
+
+      .timezone-name {
+        font-size: 14px;
+      }
+    }
+  }
+
+  &-loading,
+  &-no-results {
+    color: var(--color-font-timezone);
+    font-family: 'Poppins', serif;
+    font-size: 16px;
+    padding: 12px 20px;
+    opacity: 0.6;
   }
 }

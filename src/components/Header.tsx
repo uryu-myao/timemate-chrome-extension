@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
 import '@styles/Header.scss';
 import Searchbar from '../components/Searchbar';
+import { TimezoneInfo } from './Timezone';
 
-const Header = () => {
+interface HeaderProps {
+  addTimezone: (timezone: TimezoneInfo) => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ addTimezone }) => {
   // Search functionality ==============================
   const [showSearch, setShowSearch] = useState(false);
   const toggleSearch = () => {
@@ -60,7 +65,7 @@ const Header = () => {
             onClick={toggleTheme}></button>
         </div>
       </div>
-      {showSearch && <Searchbar />}
+      {showSearch && <Searchbar addTimezone={addTimezone} />}
     </header>
   );
 };

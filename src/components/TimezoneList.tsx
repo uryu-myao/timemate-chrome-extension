@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Timezone, { TimezoneInfo } from './Timezone';
 
 // 初始时区数据
@@ -8,7 +8,11 @@ const initialTimezones: TimezoneInfo[] = [
   { id: 'rome', city: 'Rome', zone: 'Europe/Rome' },
 ];
 
-const TimezoneList = () => {
+interface TimezoneListProps {
+  onAddTimezone?: (timezone: (timezone: TimezoneInfo) => void) => void;
+}
+
+const TimezoneList: React.FC<TimezoneListProps> = ({ onAddTimezone }) => {
   const [timezones, setTimezones] = useState<TimezoneInfo[]>(initialTimezones);
   const [activeSettingId, setActiveSettingId] = useState<string | null>(null);
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
@@ -37,6 +41,24 @@ const TimezoneList = () => {
   const unpinTimezone = (id: string) => {
     setPinnedIds((prev) => prev.filter((tid) => tid !== id));
   };
+
+  // 使用useCallback包装addTimezone函数，避免不必要的重新创建
+  const addTimezone = useCallback((newTimezone: TimezoneInfo) => {
+    // 检查是否已存在相同ID的时区
+    setTimezones((prev) => {
+      if (prev.some((tz) => tz.id === newTimezone.id)) {
+        return prev; // 如果已存在，返回原数组
+      }
+      return [...prev, newTimezone]; // 否则添加新时区
+    });
+  }, []);
+
+  // 使用useEffect在组件挂载后注册方法，而不是在渲染过程中
+  useEffect(() => {
+    if (onAddTimezone) {
+      onAddTimezone(addTimezone);
+    }
+  }, [onAddTimezone, addTimezone]); // 正确添加所有依赖项
 
   // 按固定状态排序（固定的在前面）
   const sortedTimezones = [...timezones].sort((a, b) => {
