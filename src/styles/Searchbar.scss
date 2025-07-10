@@ -43,5 +43,21 @@
         color: #a8a8a8;
       }
     }
+
+    &__btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      right: 30px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-image: var(--icon-search);
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: auto;
+      cursor: pointer;
+      z-index: 2;
+    }
   }
 }
