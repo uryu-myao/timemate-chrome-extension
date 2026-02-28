@@ -125,7 +125,6 @@ const Timezone: React.FC<TimezoneProps> = ({
               unpinTimezone();
             } else {
               pinTimezone();
-              toggleSetting(id);
             }
           }}
         />
