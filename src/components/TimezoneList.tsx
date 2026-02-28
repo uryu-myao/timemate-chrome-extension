@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Timezone, { TimezoneInfo } from './Timezone';
 
+const TIMEZONE_STORAGE_KEY = 'timemate.timezones.v1';
+
 // 初始时区数据
 const initialTimezones: TimezoneInfo[] = [
   { id: 'tokyo', city: 'Tokyo', zone: 'Asia/Tokyo' },
@@ -8,12 +10,34 @@ const initialTimezones: TimezoneInfo[] = [
   { id: 'rome', city: 'Rome', zone: 'Europe/Rome' },
 ];
 
+const loadStoredTimezones = (): TimezoneInfo[] => {
+  try {
+    const raw = localStorage.getItem(TIMEZONE_STORAGE_KEY);
+    if (!raw) return initialTimezones;
+
+    const parsed = JSON.parse(raw) as TimezoneInfo[];
+    if (!Array.isArray(parsed)) return initialTimezones;
+
+    const valid = parsed.filter(
+      (item) =>
+        item &&
+        typeof item.id === 'string' &&
+        typeof item.city === 'string' &&
+        typeof item.zone === 'string'
+    );
+
+    return valid.length > 0 ? valid : initialTimezones;
+  } catch {
+    return initialTimezones;
+  }
+};
+
 interface TimezoneListProps {
   onAddTimezone?: (timezone: (timezone: TimezoneInfo) => void) => void;
 }
 
 const TimezoneList: React.FC<TimezoneListProps> = ({ onAddTimezone }) => {
-  const [timezones, setTimezones] = useState<TimezoneInfo[]>(initialTimezones);
+  const [timezones, setTimezones] = useState<TimezoneInfo[]>(loadStoredTimezones);
   const [activeSettingId, setActiveSettingId] = useState<string | null>(null);
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
 
@@ -40,13 +64,22 @@ const TimezoneList: React.FC<TimezoneListProps> = ({ onAddTimezone }) => {
   // 取消固定
   const unpinTimezone = (id: string) => {
     setPinnedIds((prev) => prev.filter((tid) => tid !== id));
+    if (activeSettingId === id) {
+      setActiveSettingId(null);
+    }
   };
 
   // 使用useCallback包装addTimezone函数，避免不必要的重新创建
   const addTimezone = useCallback((newTimezone: TimezoneInfo) => {
-    // 检查是否已存在相同ID的时区
+    // 允许相同时区的不同城市；仅阻止完全重复（同 city + zone）
     setTimezones((prev) => {
-      if (prev.some((tz) => tz.id === newTimezone.id)) {
+      if (
+        prev.some(
+          (tz) =>
+            tz.zone === newTimezone.zone &&
+            tz.city.toLowerCase() === newTimezone.city.toLowerCase()
+        )
+      ) {
         return prev; // 如果已存在，返回原数组
       }
       return [...prev, newTimezone]; // 否则添加新时区
@@ -59,6 +92,10 @@ const TimezoneList: React.FC<TimezoneListProps> = ({ onAddTimezone }) => {
       onAddTimezone(addTimezone);
     }
   }, [onAddTimezone, addTimezone]); // 正确添加所有依赖项
+
+  useEffect(() => {
+    localStorage.setItem(TIMEZONE_STORAGE_KEY, JSON.stringify(timezones));
+  }, [timezones]);
 
   // 按固定状态排序（固定的在前面）
   const sortedTimezones = [...timezones].sort((a, b) => {

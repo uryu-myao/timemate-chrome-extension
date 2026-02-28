@@ -65,7 +65,12 @@ const Header: React.FC<HeaderProps> = ({ addTimezone }) => {
             onClick={toggleTheme}></button>
         </div>
       </div>
-      {showSearch && <Searchbar addTimezone={addTimezone} />}
+      {showSearch && (
+        <Searchbar
+          addTimezone={addTimezone}
+          onSelect={() => setShowSearch(false)}
+        />
+      )}
     </header>
   );
 };
