@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
             <div className="header-logo-menu__menu">
               <button className="header-logo-menu__item">
                 <a
-                  href=" https://chromewebstore.google.com/detail/ID/reviews"
+                  href=" https://chromewebstore.google.com/detail/gmjjpjccmmdnainbbgchlnkhmgckcmik/reviews"
                   target="_blank"
                   rel="noopener noreferrer">
                   Rate us <span>★★★★★</span>

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "version": "1.0.0",
   "name": "TimeMate — World Clock for Your Browser",
-  "description": "Pin your favorite cities and see their current local time instantly—perfect for international meetings and staying synced with people worldwide.",
+  "description": "View multiple city time zones in one popup, with search, sorting, and pinning for quick world-time reference.",
   "action": {
     "default_popup": "index.html",
     "default_icon": {
@@ -17,7 +17,5 @@
     "32": "icons/logos/logo-light-32.png",
     "48": "icons/logos/logo-light-48.png",
     "128": "icons/logos/logo-light-128.png"
-  },
-  "permissions": ["storage", "activeTab", "scripting"],
-  "host_permissions": ["<all_urls>"]
+  }
 }
