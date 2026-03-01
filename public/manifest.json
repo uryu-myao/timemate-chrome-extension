@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "version": "1.0.0",
-  "name": "Time Mate",
-  "description": "Time Mate is a simple extension that helps you track your time spent on different websites.",
+  "name": "TimeMate — World Clock for Your Browser",
+  "description": "Pin your favorite cities and see their current local time instantly—perfect for international meetings and staying synced with people worldwide.",
   "action": {
     "default_popup": "index.html",
     "default_icon": {
