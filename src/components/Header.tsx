@@ -23,9 +23,17 @@ const Header: React.FC<HeaderProps> = ({
   };
   const [showSortMenu, setShowSortMenu] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
+  const [showLogoMenu, setShowLogoMenu] = useState(false);
+  const logoRef = useRef<HTMLDivElement>(null);
   const toggleSortMenu = () => {
     setShowSearch(false);
+    setShowLogoMenu(false);
     setShowSortMenu((prev) => !prev);
+  };
+  const toggleLogoMenu = () => {
+    setShowSearch(false);
+    setShowSortMenu(false);
+    setShowLogoMenu((prev) => !prev);
   };
 
   // Theme functionality ==============================
@@ -68,8 +76,12 @@ const Header: React.FC<HeaderProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (sortRef.current && !sortRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (sortRef.current && !sortRef.current.contains(target)) {
         setShowSortMenu(false);
+      }
+      if (logoRef.current && !logoRef.current.contains(target)) {
+        setShowLogoMenu(false);
       }
     };
 
@@ -82,7 +94,32 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className="header">
       <div className="header-inner">
-        <div className="header-logo"></div>
+        <div className="header-logo-menu" ref={logoRef}>
+          <button
+            className="header-logo"
+            aria-label="Open logo menu"
+            onClick={toggleLogoMenu}></button>
+          {showLogoMenu && (
+            <div className="header-logo-menu__menu">
+              <button className="header-logo-menu__item">
+                <a
+                  href=" https://chromewebstore.google.com/detail/gmjjpjccmmdnainbbgchlnkhmgckcmik/reviews"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  Rate us <span>★★★★★</span>
+                </a>
+              </button>
+              <button className="header-logo-menu__item">
+                <a
+                  href="https://forms.gle/ncZLfTs8RKE59ETC9"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  Send Feedback
+                </a>
+              </button>
+            </div>
+          )}
+        </div>
         <div className="header-btns">
           <button
             className="header-btn header-btn__plus"

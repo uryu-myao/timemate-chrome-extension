@@ -46,17 +46,35 @@ interface TimezoneListProps {
   sortMode: SortMode;
 }
 
-const getMinutesInZone = (zone: string): number => {
+const getDateTimeRankInZone = (zone: string): number => {
   try {
     const parts = new Intl.DateTimeFormat('en-US', {
       timeZone: zone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
+      second: '2-digit',
       hour12: false,
     }).formatToParts(new Date());
+
+    const year = Number(parts.find((p) => p.type === 'year')?.value ?? 0);
+    const month = Number(parts.find((p) => p.type === 'month')?.value ?? 0);
+    const day = Number(parts.find((p) => p.type === 'day')?.value ?? 0);
     const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? 0);
     const minute = Number(parts.find((p) => p.type === 'minute')?.value ?? 0);
-    return hour * 60 + minute;
+    const second = Number(parts.find((p) => p.type === 'second')?.value ?? 0);
+
+    // Compare by local date first, then local time (YYYYMMDDHHmmss).
+    return (
+      year * 10000000000 +
+      month * 100000000 +
+      day * 1000000 +
+      hour * 10000 +
+      minute * 100 +
+      second
+    );
   } catch {
     return Number.MAX_SAFE_INTEGER;
   }
@@ -150,6 +168,27 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
     return () => clearInterval(intervalId);
   }, [sortMode]);
 
+  useEffect(() => {
+    if (!activeSettingId) return;
+
+    const handleClickOutsideActiveCard = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const card = target?.closest('[data-timezone-id]') as
+        | HTMLElement
+        | null;
+      const clickedId = card?.dataset.timezoneId ?? null;
+
+      if (clickedId !== activeSettingId) {
+        setActiveSettingId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutsideActiveCard);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideActiveCard);
+    };
+  }, [activeSettingId]);
+
   const timezoneOrder = new Map(timezones.map((tz, index) => [tz.id, index]));
 
   const compareByMode = (a: TimezoneInfo, b: TimezoneInfo): number => {
@@ -158,7 +197,7 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
     }
 
     if (sortMode === 'time') {
-      return getMinutesInZone(a.zone) - getMinutesInZone(b.zone);
+      return getDateTimeRankInZone(a.zone) - getDateTimeRankInZone(b.zone);
     }
 
     // newest(default): recently added first
