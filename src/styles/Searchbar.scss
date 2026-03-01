@@ -26,6 +26,28 @@
         background-size: auto;
         z-index: 2;
       }
+
+      &::after {
+        content: 'You can add up to 10 cities';
+        display: none;
+        position: absolute;
+        bottom: -23px;
+        transform: translateX(-50%);
+        left: 50%;
+        width: max-content;
+        font-family: 'Poppins', serif;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-font-timezone);
+        background-color: var(--color-secondary);
+        padding: 10px 15px;
+        border-radius: 100vw;
+        z-index: 2;
+      }
+
+      &.limit-reached::after {
+        display: block;
+      }
     }
 
     &__field {

@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import Timezone, { TimezoneInfo } from './Timezone';
-import type { SortMode } from '../App';
+import type { AddTimezoneResult, SortMode } from '../App';
 
 const TIMEZONE_STORAGE_KEY = 'timemate.timezones.v1';
+const MAX_CITIES = 10;
 
 // 初始时区数据
 const initialTimezones: TimezoneInfo[] = [];
@@ -23,14 +24,25 @@ const loadStoredTimezones = (): TimezoneInfo[] => {
         typeof item.zone === 'string'
     );
 
-    return valid.length > 0 ? valid : initialTimezones;
+    // Migrate legacy seeded defaults (tokyo/newyork/rome) to empty list.
+    const legacySeedIds = ['tokyo', 'newyork', 'rome'];
+    const isLegacySeed =
+      valid.length === legacySeedIds.length &&
+      legacySeedIds.every((id) => valid.some((item) => item.id === id));
+    if (isLegacySeed) {
+      return [];
+    }
+
+    return valid.slice(0, MAX_CITIES);
   } catch {
     return initialTimezones;
   }
 };
 
 interface TimezoneListProps {
-  onAddTimezone?: (timezone: (timezone: TimezoneInfo) => void) => void;
+  onAddTimezone?: (
+    timezone: (timezone: TimezoneInfo) => AddTimezoneResult
+  ) => void;
   sortMode: SortMode;
 }
 
@@ -89,7 +101,9 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
   };
 
   // 使用useCallback包装addTimezone函数，避免不必要的重新创建
-  const addTimezone = useCallback((newTimezone: TimezoneInfo) => {
+  const addTimezone = useCallback((newTimezone: TimezoneInfo): AddTimezoneResult => {
+    let result: AddTimezoneResult = 'duplicate';
+
     // 允许相同时区的不同城市；仅阻止完全重复（同 city + zone）
     setTimezones((prev) => {
       if (
@@ -99,10 +113,20 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
             tz.city.toLowerCase() === newTimezone.city.toLowerCase()
         )
       ) {
+        result = 'duplicate';
         return prev; // 如果已存在，返回原数组
       }
+
+      if (prev.length >= MAX_CITIES) {
+        result = 'limit';
+        return prev;
+      }
+
+      result = 'added';
       return [...prev, newTimezone]; // 否则添加新时区
     });
+
+    return result;
   }, []);
 
   // 使用useEffect在组件挂载后注册方法，而不是在渲染过程中
@@ -126,6 +150,8 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
     return () => clearInterval(intervalId);
   }, [sortMode]);
 
+  const timezoneOrder = new Map(timezones.map((tz, index) => [tz.id, index]));
+
   const compareByMode = (a: TimezoneInfo, b: TimezoneInfo): number => {
     if (sortMode === 'alphabet') {
       return a.city.localeCompare(b.city);
@@ -135,8 +161,10 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
       return getMinutesInZone(a.zone) - getMinutesInZone(b.zone);
     }
 
-    // "newest(default)" per requirement note: added earlier first.
-    return 0;
+    // newest(default): recently added first
+    const orderA = timezoneOrder.get(a.id) ?? 0;
+    const orderB = timezoneOrder.get(b.id) ?? 0;
+    return orderB - orderA;
   };
 
   // 置顶始终在前；同组内按排序命令排序。

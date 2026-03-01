@@ -6,24 +6,26 @@ import '@styles/_reset.css';
 import '@styles/main.scss';
 
 export type SortMode = 'newest' | 'time' | 'alphabet';
+export type AddTimezoneResult = 'added' | 'duplicate' | 'limit';
 
 function App() {
   const [addTimezoneFn, setAddTimezoneFn] = useState<
-    ((timezone: TimezoneInfo) => void) | null
+    ((timezone: TimezoneInfo) => AddTimezoneResult) | null
   >(null);
   const [sortMode, setSortMode] = useState<SortMode>('newest');
 
   const registerAddTimezone = useCallback(
-    (fn: (timezone: TimezoneInfo) => void) => {
+    (fn: (timezone: TimezoneInfo) => AddTimezoneResult) => {
       setAddTimezoneFn(() => fn);
     },
     []
   );
 
-  const handleAddTimezone = (timezone: TimezoneInfo) => {
+  const handleAddTimezone = (timezone: TimezoneInfo): AddTimezoneResult => {
     if (addTimezoneFn) {
-      addTimezoneFn(timezone);
+      return addTimezoneFn(timezone);
     }
+    return 'duplicate';
   };
 
   return (

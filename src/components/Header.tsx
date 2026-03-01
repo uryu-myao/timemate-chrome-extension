@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import '@styles/Header.scss';
 import Searchbar from '../components/Searchbar';
 import { TimezoneInfo } from './Timezone';
-import type { SortMode } from '../App';
+import type { AddTimezoneResult, SortMode } from '../App';
 
 interface HeaderProps {
-  addTimezone: (timezone: TimezoneInfo) => void;
+  addTimezone: (timezone: TimezoneInfo) => AddTimezoneResult;
   sortMode: SortMode;
   onSortChange: (mode: SortMode) => void;
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import '@styles/Searchbar.scss';
+import type { AddTimezoneResult } from '../App';
 
 interface SearchResult {
   id: string;
@@ -30,7 +31,7 @@ interface OpenMeteoSearchResponse {
 const EMPTY_ZONES: string[] = [];
 
 interface SearchbarProps {
-  addTimezone: (timezone: SearchResult) => void;
+  addTimezone: (timezone: SearchResult) => AddTimezoneResult;
   existingZones?: string[];
   onSelect?: () => void;
 }
@@ -44,6 +45,7 @@ const Searchbar: React.FC<SearchbarProps> = ({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showLimitTip, setShowLimitTip] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const activeRequestIdRef = useRef(0);
@@ -112,10 +114,17 @@ const Searchbar: React.FC<SearchbarProps> = ({
     const value = e.target.value;
     setSearchTerm(value);
     setShowResults(!!value.trim());
+    setShowLimitTip(false);
   };
 
   const handleSelectCity = (result: SearchResult) => {
-    addTimezone(result);
+    const addResult = addTimezone(result);
+    if (addResult === 'limit') {
+      setShowLimitTip(true);
+      return;
+    }
+
+    setShowLimitTip(false);
     setSearchTerm('');
     setShowResults(false);
     setResults([]);
@@ -172,7 +181,8 @@ const Searchbar: React.FC<SearchbarProps> = ({
 
   return (
     <div className="search-inner" ref={searchRef}>
-      <div className="search-input__container">
+      <div
+        className={`search-input__container ${showLimitTip ? 'limit-reached' : ''}`}>
         <input
           ref={inputRef}
           className="search-input__field"

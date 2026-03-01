@@ -110,7 +110,7 @@
     grid-template:
       'local time' auto
       'footer footer' 30px / 1fr 1fr;
-    gap: 10px;
+    gap: 6px;
     padding-top: 6px;
     background-color: var(--color-primary);
     border-radius: 16px;
@@ -150,7 +150,7 @@
       display: flex;
       align-items: center;
       padding-left: 12px;
-      padding-top: 12px;
+      padding-top: 8px;
     }
 
     &__time {
