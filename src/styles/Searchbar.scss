@@ -42,7 +42,6 @@
       font-style: normal;
       outline: none;
       transition: border-color 0.3s;
-      text-transform: capitalize;
 
       &:focus {
         border-color: var(--color-secondary);
@@ -81,7 +80,15 @@
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(8px);
     box-sizing: border-box;
-    overflow: hidden;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
   }
 
   &-result {
