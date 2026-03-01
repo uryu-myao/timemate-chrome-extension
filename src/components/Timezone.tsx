@@ -93,6 +93,7 @@ const Timezone: React.FC<TimezoneProps> = ({
 
   return (
     <div
+      data-timezone-id={id}
       className={`timezone ${setting ? 'setting' : ''} ${
         isPinned ? 'pinned' : ''
       }`}>

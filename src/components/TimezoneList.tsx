@@ -150,6 +150,27 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
     return () => clearInterval(intervalId);
   }, [sortMode]);
 
+  useEffect(() => {
+    if (!activeSettingId) return;
+
+    const handleClickOutsideActiveCard = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const card = target?.closest('[data-timezone-id]') as
+        | HTMLElement
+        | null;
+      const clickedId = card?.dataset.timezoneId ?? null;
+
+      if (clickedId !== activeSettingId) {
+        setActiveSettingId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutsideActiveCard);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideActiveCard);
+    };
+  }, [activeSettingId]);
+
   const timezoneOrder = new Map(timezones.map((tz, index) => [tz.id, index]));
 
   const compareByMode = (a: TimezoneInfo, b: TimezoneInfo): number => {
