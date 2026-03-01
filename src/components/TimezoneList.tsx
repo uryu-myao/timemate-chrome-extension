@@ -5,11 +5,7 @@ import type { SortMode } from '../App';
 const TIMEZONE_STORAGE_KEY = 'timemate.timezones.v1';
 
 // 初始时区数据
-const initialTimezones: TimezoneInfo[] = [
-  { id: 'tokyo', city: 'Tokyo', zone: 'Asia/Tokyo' },
-  { id: 'newyork', city: 'New York', zone: 'America/New_York' },
-  { id: 'rome', city: 'Rome', zone: 'Europe/Rome' },
-];
+const initialTimezones: TimezoneInfo[] = [];
 
 const loadStoredTimezones = (): TimezoneInfo[] => {
   try {
@@ -54,8 +50,12 @@ const getMinutesInZone = (zone: string): number => {
   }
 };
 
-const TimezoneList: React.FC<TimezoneListProps> = ({ onAddTimezone, sortMode }) => {
-  const [timezones, setTimezones] = useState<TimezoneInfo[]>(loadStoredTimezones);
+const TimezoneList: React.FC<TimezoneListProps> = ({
+  onAddTimezone,
+  sortMode,
+}) => {
+  const [timezones, setTimezones] =
+    useState<TimezoneInfo[]>(loadStoredTimezones);
   const [activeSettingId, setActiveSettingId] = useState<string | null>(null);
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
   const [, setTimeSortTick] = useState(0);
@@ -152,20 +152,29 @@ const TimezoneList: React.FC<TimezoneListProps> = ({ onAddTimezone, sortMode }) 
 
   return (
     <div className="timezone-list">
-      {sortedTimezones.map((tz) => (
-        <Timezone
-          key={tz.id}
-          id={tz.id}
-          city={tz.city}
-          zone={tz.zone}
-          setting={activeSettingId === tz.id}
-          isPinned={pinnedIds.includes(tz.id)}
-          toggleSetting={() => toggleSetting(tz.id)}
-          deleteTimezone={() => deleteTimezone(tz.id)}
-          pinTimezone={() => pinTimezone(tz.id)}
-          unpinTimezone={() => unpinTimezone(tz.id)}
-        />
-      ))}
+      {sortedTimezones.length === 0 ? (
+        <div className="timezone-list__empty">
+          <p className="timezone-list__empty-text">
+            Press <span className="timezone-list__empty-addicon"></span> to add
+            your first city.
+          </p>
+        </div>
+      ) : (
+        sortedTimezones.map((tz) => (
+          <Timezone
+            key={tz.id}
+            id={tz.id}
+            city={tz.city}
+            zone={tz.zone}
+            setting={activeSettingId === tz.id}
+            isPinned={pinnedIds.includes(tz.id)}
+            toggleSetting={() => toggleSetting(tz.id)}
+            deleteTimezone={() => deleteTimezone(tz.id)}
+            pinTimezone={() => pinTimezone(tz.id)}
+            unpinTimezone={() => unpinTimezone(tz.id)}
+          />
+        ))
+      )}
     </div>
   );
 };
