@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "name": "TimeMate — World Clock for Your Browser",
   "description": "View multiple city time zones in one popup, with search, sorting, and pinning for quick world-time reference.",
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "index.html",
     "default_icon": {
