@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "TimeMate — World Clock for Your Browser",
   "description": "View multiple city time zones in one popup, with search, sorting, and pinning for quick world-time reference.",
   "background": {
