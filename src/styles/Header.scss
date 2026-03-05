@@ -32,7 +32,16 @@
 
   &-btns {
     display: flex;
+    align-items: center;
     gap: 10px;
+
+    &__inner {
+      display: flex;
+      gap: 10px;
+      background-color: var(--color-bg-info);
+      padding: 4px 4px 0;
+      border-radius: 100vw;
+    }
   }
 
   &-logo-menu {
@@ -139,6 +148,12 @@
     &__plus {
       background-size: 15px;
       background-image: var(--icon-plus);
+
+      &-wrapper {
+        background-color: var(--color-bg-info);
+        padding: 4px 4px 0;
+        border-radius: 100vw;
+      }
     }
     &__theme {
       background-size: 15px;
@@ -148,6 +163,17 @@
     &__sort {
       background-size: 15px;
       background-image: var(--icon-sort);
+    }
+
+    &__hour-format {
+      border: none;
+      color: var(--color-font-timezone);
+      font-family: 'Poppins', serif;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 32px;
+      text-align: center;
+      text-transform: uppercase;
     }
   }
 }

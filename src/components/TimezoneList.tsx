@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import Timezone, { TimezoneInfo } from './Timezone';
-import type { AddTimezoneResult, SortMode } from '../App';
+import type { AddTimezoneResult, HourFormat, SortMode } from '../App';
 
 const TIMEZONE_STORAGE_KEY = 'timemate.timezones.v1';
+const TIMEZONE_PINNED_STORAGE_KEY = 'timemate.pinned.v1';
 const MAX_CITIES = 10;
 
 // 初始时区数据
@@ -39,11 +40,29 @@ const loadStoredTimezones = (): TimezoneInfo[] => {
   }
 };
 
+const loadStoredPinnedIds = (validTimezoneIds: string[]): string[] => {
+  try {
+    const raw = localStorage.getItem(TIMEZONE_PINNED_STORAGE_KEY);
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw) as string[];
+    if (!Array.isArray(parsed)) return [];
+
+    const validIdSet = new Set(validTimezoneIds);
+    return parsed.filter(
+      (id) => typeof id === 'string' && validIdSet.has(id)
+    );
+  } catch {
+    return [];
+  }
+};
+
 interface TimezoneListProps {
   onAddTimezone?: (
     timezone: (timezone: TimezoneInfo) => AddTimezoneResult
   ) => void;
   sortMode: SortMode;
+  hourFormat: HourFormat;
 }
 
 const getDateTimeRankInZone = (zone: string): number => {
@@ -83,11 +102,16 @@ const getDateTimeRankInZone = (zone: string): number => {
 const TimezoneList: React.FC<TimezoneListProps> = ({
   onAddTimezone,
   sortMode,
+  hourFormat,
 }) => {
-  const [timezones, setTimezones] =
-    useState<TimezoneInfo[]>(loadStoredTimezones);
+  const [timezones, setTimezones] = useState<TimezoneInfo[]>(() =>
+    loadStoredTimezones()
+  );
   const [activeSettingId, setActiveSettingId] = useState<string | null>(null);
-  const [pinnedIds, setPinnedIds] = useState<string[]>([]);
+  const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
+    const storedTimezones = loadStoredTimezones();
+    return loadStoredPinnedIds(storedTimezones.map((tz) => tz.id));
+  });
   const [, setTimeSortTick] = useState(0);
 
   // 切换设置状态
@@ -157,6 +181,18 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
   useEffect(() => {
     localStorage.setItem(TIMEZONE_STORAGE_KEY, JSON.stringify(timezones));
   }, [timezones]);
+
+  useEffect(() => {
+    const validIdSet = new Set(timezones.map((tz) => tz.id));
+    setPinnedIds((prev) => {
+      const next = prev.filter((id) => validIdSet.has(id));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [timezones]);
+
+  useEffect(() => {
+    localStorage.setItem(TIMEZONE_PINNED_STORAGE_KEY, JSON.stringify(pinnedIds));
+  }, [pinnedIds]);
 
   useEffect(() => {
     if (sortMode !== 'time') return;
@@ -233,6 +269,7 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
             id={tz.id}
             city={tz.city}
             zone={tz.zone}
+            hourFormat={hourFormat}
             setting={activeSettingId === tz.id}
             isPinned={pinnedIds.includes(tz.id)}
             toggleSetting={() => toggleSetting(tz.id)}
