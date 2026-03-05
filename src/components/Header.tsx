@@ -2,18 +2,22 @@ import { useState, useEffect, useRef } from 'react';
 import '@styles/Header.scss';
 import Searchbar from '../components/Searchbar';
 import { TimezoneInfo } from './Timezone';
-import type { AddTimezoneResult, SortMode } from '../App';
+import type { AddTimezoneResult, HourFormat, SortMode } from '../App';
 
 interface HeaderProps {
   addTimezone: (timezone: TimezoneInfo) => AddTimezoneResult;
   sortMode: SortMode;
   onSortChange: (mode: SortMode) => void;
+  hourFormat: HourFormat;
+  onToggleHourFormat: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
   addTimezone,
   sortMode,
   onSortChange,
+  hourFormat,
+  onToggleHourFormat,
 }) => {
   // Search functionality ==============================
   const [showSearch, setShowSearch] = useState(false);
@@ -121,54 +125,64 @@ const Header: React.FC<HeaderProps> = ({
           )}
         </div>
         <div className="header-btns">
-          <button
-            className="header-btn header-btn__plus"
-            aria-label="Toggle search"
-            onClick={toggleSearch}></button>
-          <div className="header-sort" ref={sortRef}>
+          <div className="header-btn__plus-wrapper">
             <button
-              className="header-btn header-btn__sort"
-              aria-label="Sort options"
-              onClick={toggleSortMenu}></button>
-            {showSortMenu && (
-              <div className="header-sort__menu">
-                <button
-                  className={`header-sort__item ${
-                    sortMode === 'newest' ? 'active' : ''
-                  }`}
-                  onClick={() => {
-                    onSortChange('newest');
-                    setShowSortMenu(false);
-                  }}>
-                  Sort by newest (default)
-                </button>
-                <button
-                  className={`header-sort__item ${
-                    sortMode === 'time' ? 'active' : ''
-                  }`}
-                  onClick={() => {
-                    onSortChange('time');
-                    setShowSortMenu(false);
-                  }}>
-                  Sort by time
-                </button>
-                <button
-                  className={`header-sort__item ${
-                    sortMode === 'alphabet' ? 'active' : ''
-                  }`}
-                  onClick={() => {
-                    onSortChange('alphabet');
-                    setShowSortMenu(false);
-                  }}>
-                  Sort by alphabet
-                </button>
-              </div>
-            )}
+              className="header-btn header-btn__plus"
+              aria-label="Toggle search"
+              onClick={toggleSearch}></button>
           </div>
-          <button
-            className="header-btn header-btn__theme"
-            aria-label="Toggle theme"
-            onClick={toggleTheme}></button>
+          <div className="header-btns__inner">
+            <div className="header-sort" ref={sortRef}>
+              <button
+                className="header-btn header-btn__sort"
+                aria-label="Sort options"
+                onClick={toggleSortMenu}></button>
+              {showSortMenu && (
+                <div className="header-sort__menu">
+                  <button
+                    className={`header-sort__item ${
+                      sortMode === 'newest' ? 'active' : ''
+                    }`}
+                    onClick={() => {
+                      onSortChange('newest');
+                      setShowSortMenu(false);
+                    }}>
+                    Sort by newest (default)
+                  </button>
+                  <button
+                    className={`header-sort__item ${
+                      sortMode === 'time' ? 'active' : ''
+                    }`}
+                    onClick={() => {
+                      onSortChange('time');
+                      setShowSortMenu(false);
+                    }}>
+                    Sort by time
+                  </button>
+                  <button
+                    className={`header-sort__item ${
+                      sortMode === 'alphabet' ? 'active' : ''
+                    }`}
+                    onClick={() => {
+                      onSortChange('alphabet');
+                      setShowSortMenu(false);
+                    }}>
+                    Sort by alphabet
+                  </button>
+                </div>
+              )}
+            </div>
+            <button
+              className="header-btn header-btn__hour-format"
+              aria-label="Toggle 12/24 hour format"
+              onClick={onToggleHourFormat}>
+              {hourFormat === '12' ? '24' : '12'}
+            </button>
+            <button
+              className="header-btn header-btn__theme"
+              aria-label="Toggle theme"
+              onClick={toggleTheme}></button>
+          </div>
         </div>
       </div>
       {showSearch && (

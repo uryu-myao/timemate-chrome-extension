@@ -4,6 +4,7 @@ import '@styles/Timezone.scss';
 import SettingButton from './SettingButton';
 import PinButton from './PinButton';
 import DeleteButton from './DeleteButton';
+import type { HourFormat } from '../App';
 
 export interface TimezoneInfo {
   id: string;
@@ -12,6 +13,7 @@ export interface TimezoneInfo {
 }
 
 interface TimezoneProps extends TimezoneInfo {
+  hourFormat: HourFormat;
   setting: boolean;
   isPinned: boolean;
   toggleSetting: (id: string) => void;
@@ -24,6 +26,7 @@ const Timezone: React.FC<TimezoneProps> = ({
   id,
   city,
   zone,
+  hourFormat,
   setting,
   isPinned,
   toggleSetting,
@@ -66,15 +69,25 @@ const Timezone: React.FC<TimezoneProps> = ({
       const now = new Date(
         new Date().toLocaleString('en-US', { timeZone: zone })
       );
+      const timeParts = new Intl.DateTimeFormat('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: hourFormat === '12',
+      }).formatToParts(now);
+
+      const hour = timeParts.find((p) => p.type === 'hour')?.value ?? '00';
+      const minute =
+        timeParts.find((p) => p.type === 'minute')?.value ?? '00';
+      const dayPeriod = timeParts.find((p) => p.type === 'dayPeriod')?.value;
+
       setTimeData((prev) => ({
         ...prev,
-        time: now.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
+        time: `${hour}:${minute}`,
         second: now.getSeconds().toString().padStart(2, '0'),
-        meridiem: now.getHours() < 12 ? 'AM' : 'PM',
+        meridiem:
+          hourFormat === '12'
+            ? (dayPeriod ?? (now.getHours() < 12 ? 'AM' : 'PM')).toUpperCase()
+            : '',
         week: now
           .toLocaleDateString('en-US', { weekday: 'short' })
           .toLowerCase(),
@@ -89,7 +102,7 @@ const Timezone: React.FC<TimezoneProps> = ({
     updateTime();
     const intervalId = setInterval(updateTime, 1000);
     return () => clearInterval(intervalId);
-  }, [zone]);
+  }, [zone, hourFormat]);
 
   return (
     <div
@@ -100,7 +113,9 @@ const Timezone: React.FC<TimezoneProps> = ({
       <div className="timezone-inner">
         <div className="timezone-data__location">{timeData.city}</div>
         <div className="timezone-data__time">{timeData.time}</div>
-        <div className="timezone-data__meridiem">{timeData.meridiem}</div>
+        {hourFormat === '12' && (
+          <div className="timezone-data__meridiem">{timeData.meridiem}</div>
+        )}
         <div className="timezone-data__second">{timeData.second}</div>
         <div className="timezone-footer">
           <p>
