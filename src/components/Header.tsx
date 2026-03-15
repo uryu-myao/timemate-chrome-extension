@@ -21,8 +21,11 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   // Search functionality ==============================
   const [showSearch, setShowSearch] = useState(false);
+  const [showConvertMenu, setShowConvertMenu] = useState(false);
+  const convertRef = useRef<HTMLDivElement>(null);
   const toggleSearch = () => {
     setShowSortMenu(false);
+    setShowConvertMenu(false);
     setShowSearch((prev) => !prev);
   };
   const [showSortMenu, setShowSortMenu] = useState(false);
@@ -32,11 +35,19 @@ const Header: React.FC<HeaderProps> = ({
   const toggleSortMenu = () => {
     setShowSearch(false);
     setShowLogoMenu(false);
+    setShowConvertMenu(false);
     setShowSortMenu((prev) => !prev);
+  };
+  const toggleConvertMenu = () => {
+    setShowSearch(false);
+    setShowLogoMenu(false);
+    setShowSortMenu(false);
+    setShowConvertMenu((prev) => !prev);
   };
   const toggleLogoMenu = () => {
     setShowSearch(false);
     setShowSortMenu(false);
+    setShowConvertMenu(false);
     setShowLogoMenu((prev) => !prev);
   };
 
@@ -84,6 +95,9 @@ const Header: React.FC<HeaderProps> = ({
       if (sortRef.current && !sortRef.current.contains(target)) {
         setShowSortMenu(false);
       }
+      if (convertRef.current && !convertRef.current.contains(target)) {
+        setShowConvertMenu(false);
+      }
       if (logoRef.current && !logoRef.current.contains(target)) {
         setShowLogoMenu(false);
       }
@@ -96,7 +110,8 @@ const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
-    <header className="header">
+    <header
+      className={`header ${showConvertMenu ? 'header--convert-open' : ''}`}>
       <div className="header-inner">
         <div className="header-logo-menu" ref={logoRef}>
           <button
@@ -125,11 +140,46 @@ const Header: React.FC<HeaderProps> = ({
           )}
         </div>
         <div className="header-btns">
-          <div className="header-btn__plus-wrapper">
-            <button
-              className="header-btn header-btn__plus"
-              aria-label="Toggle search"
-              onClick={toggleSearch}></button>
+          <div className="header-btns__inner">
+            <div>
+              <button
+                className="header-btn header-btn__plus"
+                aria-label="Toggle search"
+                onClick={toggleSearch}></button>
+            </div>
+            <div className="header-convert" ref={convertRef}>
+              <button
+                className="header-btn header-btn__convert"
+                aria-label="Toggle convert panel"
+                onClick={toggleConvertMenu}></button>
+              {showConvertMenu && (
+                <div className="header-convert__menu">
+                  <div className="header-convert__scale">
+                    <span className="header-convert__scale-label">0</span>
+                    <span className="header-convert__scale-label">6</span>
+                    <span className="header-convert__scale-label">12</span>
+                    <span className="header-convert__scale-label">18</span>
+                    <span className="header-convert__scale-label">24</span>
+                  </div>
+                  <div className="header-convert__track">
+                    <span className="header-convert__dot hour"></span>
+                    <span className="header-convert__dot"></span>
+                    <span className="header-convert__dot hour"></span>
+                    <span className="header-convert__dot"></span>
+                    <span className="header-convert__dot hour"></span>
+                    <span className="header-convert__dot"></span>
+                    <span className="header-convert__dot hour"></span>
+                    <span className="header-convert__dot"></span>
+                    <span className="header-convert__dot hour"></span>
+                    <span className="header-convert__thumb">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div className="header-btns__inner">
             <div className="header-sort" ref={sortRef}>
