@@ -16,6 +16,7 @@ function App() {
     ((timezone: TimezoneInfo) => AddTimezoneResult) | null
   >(null);
   const [isConvertModeOpen, setIsConvertModeOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>(() => {
     const stored = localStorage.getItem(SORT_MODE_STORAGE_KEY);
     if (stored === 'newest' || stored === 'time' || stored === 'alphabet') {
@@ -54,7 +55,10 @@ function App() {
   }, [hourFormat]);
 
   return (
-    <div className={`app ${isConvertModeOpen ? 'app--convert-open' : ''}`}>
+    <div
+      className={`app ${isConvertModeOpen ? 'app--convert-open' : ''} ${
+        isSearchOpen ? 'app--search-open' : ''
+      }`}>
       <Header
         addTimezone={handleAddTimezone}
         sortMode={sortMode}
@@ -65,6 +69,8 @@ function App() {
         }
         isConvertModeOpen={isConvertModeOpen}
         onConvertModeChange={setIsConvertModeOpen}
+        isSearchOpen={isSearchOpen}
+        onSearchOpenChange={setIsSearchOpen}
       />
       <div className="app-content">
         <TimezoneList

@@ -1,14 +1,20 @@
 .app {
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: 420px;
   height: 540px;
   background: var(--color-primary);
   overflow: hidden;
 
   &-content {
-    height: calc(100% - 60px);
-    padding: 20px 18px 20px;
+    flex: 1;
+    min-height: 0;
+    padding: 8px 18px 20px;
     overflow: scroll;
+    transition:
+      transform 0.24s ease,
+      padding-top 0.24s ease;
 
     &::before {
       content: '';
@@ -30,7 +36,7 @@
 
   &--convert-open {
     .app-content {
-      height: calc(100% - 60px - 86px);
+      min-height: 0;
     }
   }
 }

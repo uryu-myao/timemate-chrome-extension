@@ -2,7 +2,7 @@
   position: relative;
   color: var(--color-font-timezone);
   width: 100%;
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   transition: all 0.3s ease-in-out;
 
   &-icon__setting {
@@ -36,7 +36,7 @@
   &-btn {
     position: absolute;
     top: 50%;
-    left: -64px;
+    left: -50px;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
@@ -47,8 +47,8 @@
 
     button {
       display: block;
-      width: 50px;
-      height: 50px;
+      width: 42px;
+      height: 42px;
       border: none;
       border-radius: 16px;
       cursor: pointer;
@@ -97,7 +97,7 @@
   }
 
   &.setting {
-    transform: translateX(64px);
+    transform: translateX(50px);
 
     .timezone-btn {
       opacity: 1;
@@ -111,7 +111,7 @@
     grid-template:
       'local time' auto
       'footer footer' 30px / 1fr 1fr;
-    gap: 6px;
+    gap: 4px;
     padding-top: 6px;
     background-color: var(--color-primary);
     border-radius: 16px;
@@ -144,7 +144,7 @@
     &__location {
       grid-area: local;
       font-family: 'Poppins', serif;
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 400;
       font-style: normal;
       font-weight: 700;

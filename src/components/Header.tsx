@@ -12,6 +12,8 @@ interface HeaderProps {
   onToggleHourFormat: () => void;
   isConvertModeOpen: boolean;
   onConvertModeChange: (isOpen: boolean) => void;
+  isSearchOpen: boolean;
+  onSearchOpenChange: (isOpen: boolean) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -22,11 +24,12 @@ const Header: React.FC<HeaderProps> = ({
   onToggleHourFormat,
   isConvertModeOpen,
   onConvertModeChange,
+  isSearchOpen,
+  onSearchOpenChange,
 }) => {
   const convertStops = [0, 3, 6, 9, 12, 15, 18, 21, 24];
 
   // Search functionality ==============================
-  const [showSearch, setShowSearch] = useState(false);
   const convertRef = useRef<HTMLDivElement>(null);
   const convertTrackRef = useRef<HTMLDivElement>(null);
   const convertDotRefs = useRef<Array<HTMLSpanElement | null>>([]);
@@ -36,26 +39,26 @@ const Header: React.FC<HeaderProps> = ({
   const toggleSearch = () => {
     setShowSortMenu(false);
     onConvertModeChange(false);
-    setShowSearch((prev) => !prev);
+    onSearchOpenChange(!isSearchOpen);
   };
   const [showSortMenu, setShowSortMenu] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
   const [showLogoMenu, setShowLogoMenu] = useState(false);
   const logoRef = useRef<HTMLDivElement>(null);
   const toggleSortMenu = () => {
-    setShowSearch(false);
+    onSearchOpenChange(false);
     setShowLogoMenu(false);
     onConvertModeChange(false);
     setShowSortMenu((prev) => !prev);
   };
   const toggleConvertMenu = () => {
-    setShowSearch(false);
+    onSearchOpenChange(false);
     setShowLogoMenu(false);
     setShowSortMenu(false);
     onConvertModeChange(!isConvertModeOpen);
   };
   const toggleLogoMenu = () => {
-    setShowSearch(false);
+    onSearchOpenChange(false);
     setShowSortMenu(false);
     onConvertModeChange(false);
     setShowLogoMenu((prev) => !prev);
@@ -372,10 +375,10 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
-      {showSearch && (
+      {isSearchOpen && (
         <Searchbar
           addTimezone={addTimezone}
-          onSelect={() => setShowSearch(false)}
+          onSelect={() => onSearchOpenChange(false)}
         />
       )}
     </header>
