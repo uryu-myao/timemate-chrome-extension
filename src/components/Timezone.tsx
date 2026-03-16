@@ -14,6 +14,7 @@ export interface TimezoneInfo {
 
 interface TimezoneProps extends TimezoneInfo {
   hourFormat: HourFormat;
+  isConvertModeOpen: boolean;
   setting: boolean;
   isPinned: boolean;
   toggleSetting: (id: string) => void;
@@ -27,6 +28,7 @@ const Timezone: React.FC<TimezoneProps> = ({
   city,
   zone,
   hourFormat,
+  isConvertModeOpen,
   setting,
   isPinned,
   toggleSetting,
@@ -124,11 +126,17 @@ const Timezone: React.FC<TimezoneProps> = ({
             </span>
           </p>
           <p>
-            <span className="timezone-data__week">{timeData.week}</span>
-            <span>
-              <span className="timezone-data__date">{timeData.date}</span>
-              <span className="timezone-data__month">{timeData.month}</span>
-            </span>
+            {isConvertModeOpen ? (
+              <span>Converter Mode</span>
+            ) : (
+              <span>
+                <span className="timezone-data__week">{timeData.week}</span>
+                <span>
+                  <span className="timezone-data__date">{timeData.date}</span>
+                  <span className="timezone-data__month">{timeData.month}</span>
+                </span>
+              </span>
+            )}
           </p>
         </div>
       </div>

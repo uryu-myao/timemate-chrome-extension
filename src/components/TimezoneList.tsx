@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import Timezone, { TimezoneInfo } from './Timezone';
-import type { AddTimezoneResult, HourFormat, SortMode } from '../App';
+import type {
+  AddTimezoneResult,
+  HourFormat,
+  SortMode,
+} from '../App';
 
 const TIMEZONE_STORAGE_KEY = 'timemate.timezones.v1';
 const TIMEZONE_PINNED_STORAGE_KEY = 'timemate.pinned.v1';
@@ -63,6 +67,7 @@ interface TimezoneListProps {
   ) => void;
   sortMode: SortMode;
   hourFormat: HourFormat;
+  isConvertModeOpen: boolean;
 }
 
 const getDateTimeRankInZone = (zone: string): number => {
@@ -103,6 +108,7 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
   onAddTimezone,
   sortMode,
   hourFormat,
+  isConvertModeOpen,
 }) => {
   const [timezones, setTimezones] = useState<TimezoneInfo[]>(() =>
     loadStoredTimezones()
@@ -270,6 +276,7 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
             city={tz.city}
             zone={tz.zone}
             hourFormat={hourFormat}
+            isConvertModeOpen={isConvertModeOpen}
             setting={activeSettingId === tz.id}
             isPinned={pinnedIds.includes(tz.id)}
             toggleSetting={() => toggleSetting(tz.id)}
