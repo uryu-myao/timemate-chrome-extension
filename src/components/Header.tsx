@@ -1,8 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import '@styles/Header.scss';
 import Searchbar from '../components/Searchbar';
 import { TimezoneInfo } from './Timezone';
-import type { AddTimezoneResult, HourFormat, SortMode } from '../App';
+import type {
+  AddTimezoneResult,
+  ConvertPosition,
+  HourFormat,
+  SortMode,
+} from '../App';
 
 interface HeaderProps {
   addTimezone: (timezone: TimezoneInfo) => AddTimezoneResult;
@@ -10,6 +15,12 @@ interface HeaderProps {
   onSortChange: (mode: SortMode) => void;
   hourFormat: HourFormat;
   onToggleHourFormat: () => void;
+  isConvertModeOpen: boolean;
+  onConvertModeChange: (isOpen: boolean) => void;
+  convertPosition: ConvertPosition;
+  onConvertPositionChange: (position: ConvertPosition) => void;
+  isSearchOpen: boolean;
+  onSearchOpenChange: (isOpen: boolean) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -18,26 +29,143 @@ const Header: React.FC<HeaderProps> = ({
   onSortChange,
   hourFormat,
   onToggleHourFormat,
+  isConvertModeOpen,
+  onConvertModeChange,
+  convertPosition,
+  onConvertPositionChange,
+  isSearchOpen,
+  onSearchOpenChange,
 }) => {
+  const convertStops = [0, 3, 6, 9, 12, 15, 18, 21, 24];
+
   // Search functionality ==============================
-  const [showSearch, setShowSearch] = useState(false);
+  const convertRef = useRef<HTMLDivElement>(null);
+  const convertTrackRef = useRef<HTMLDivElement>(null);
+  const convertDotRefs = useRef<Array<HTMLSpanElement | null>>([]);
+  const [convertThumbX, setConvertThumbX] = useState(0);
+  const [isDraggingConvert, setIsDraggingConvert] = useState(false);
   const toggleSearch = () => {
     setShowSortMenu(false);
-    setShowSearch((prev) => !prev);
+    onConvertModeChange(false);
+    onSearchOpenChange(!isSearchOpen);
   };
   const [showSortMenu, setShowSortMenu] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
   const [showLogoMenu, setShowLogoMenu] = useState(false);
   const logoRef = useRef<HTMLDivElement>(null);
   const toggleSortMenu = () => {
-    setShowSearch(false);
+    onSearchOpenChange(false);
     setShowLogoMenu(false);
+    onConvertModeChange(false);
     setShowSortMenu((prev) => !prev);
   };
-  const toggleLogoMenu = () => {
-    setShowSearch(false);
+  const getLocalConvertPosition = (): number => {
+    const now = new Date();
+    const totalHours =
+      now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+
+    // Each dot spans 3 hours across the 24-hour timeline.
+    return totalHours / 3;
+  };
+  const toggleConvertMenu = () => {
+    onSearchOpenChange(false);
+    setShowLogoMenu(false);
     setShowSortMenu(false);
+    if (!isConvertModeOpen) {
+      onConvertPositionChange(getLocalConvertPosition());
+    }
+    onConvertModeChange(!isConvertModeOpen);
+  };
+  const toggleLogoMenu = () => {
+    onSearchOpenChange(false);
+    setShowSortMenu(false);
+    onConvertModeChange(false);
     setShowLogoMenu((prev) => !prev);
+  };
+
+  const getConvertMetrics = useCallback(() => {
+    const track = convertTrackRef.current;
+    if (!track) return null;
+
+    const rect = track.getBoundingClientRect();
+    const dotPositions = convertDotRefs.current
+      .map((dot) => {
+        if (!dot) return null;
+        const dotRect = dot.getBoundingClientRect();
+        return dotRect.left - rect.left + dotRect.width / 2;
+      })
+      .filter((position): position is number => position !== null);
+
+    if (dotPositions.length === 0) return null;
+
+    return {
+      rect,
+      minX: dotPositions[0],
+      maxX: dotPositions[dotPositions.length - 1],
+      dotPositions,
+    };
+  }, []);
+
+  const updateConvertPosition = useCallback((clientX: number) => {
+    const metrics = getConvertMetrics();
+    if (!metrics) return;
+
+    const relativeX = clientX - metrics.rect.left;
+    const clampedX = Math.min(Math.max(relativeX, metrics.minX), metrics.maxX);
+    const nearestDot = metrics.dotPositions.reduce(
+      (closest, dotX, index) => {
+        const distance = Math.abs(dotX - clampedX);
+        return distance < closest.distance ? { index, distance } : closest;
+      },
+      { index: 0, distance: Number.POSITIVE_INFINITY }
+    );
+
+    let nextX = clampedX;
+
+    // Apply a soft magnetic pull near markers without forcing a full snap.
+    if (nearestDot.distance <= 14) {
+      const snapX = metrics.dotPositions[nearestDot.index];
+      const pullStrength = (14 - nearestDot.distance) / 14;
+      nextX = clampedX + (snapX - clampedX) * pullStrength * 0.45;
+    }
+
+    const progress =
+      (nextX - metrics.minX) / (metrics.maxX - metrics.minX || 1);
+    const rawIndex = progress * (convertStops.length - 1);
+    onConvertPositionChange(rawIndex);
+    setConvertThumbX(nextX);
+  }, [convertStops.length, getConvertMetrics, onConvertPositionChange]);
+
+  const getThumbXForPosition = (
+    dotPositions: number[],
+    position: number
+  ): number => {
+    const lowerIndex = Math.floor(position);
+    const upperIndex = Math.ceil(position);
+    const lowerX = dotPositions[lowerIndex] ?? dotPositions[0] ?? 0;
+    const upperX =
+      dotPositions[upperIndex] ?? dotPositions[dotPositions.length - 1] ?? 0;
+
+    if (lowerIndex === upperIndex) {
+      return lowerX;
+    }
+
+    const progress = position - lowerIndex;
+    return lowerX + (upperX - lowerX) * progress;
+  };
+
+  const handleConvertPointerDown = (
+    event: React.PointerEvent<HTMLSpanElement>
+  ) => {
+    event.preventDefault();
+    setIsDraggingConvert(true);
+  };
+
+  const handleConvertTrackPointerDown = (
+    event: React.PointerEvent<HTMLDivElement>
+  ) => {
+    updateConvertPosition(event.clientX);
+    setIsDraggingConvert(true);
   };
 
   // Theme functionality ==============================
@@ -84,6 +212,9 @@ const Header: React.FC<HeaderProps> = ({
       if (sortRef.current && !sortRef.current.contains(target)) {
         setShowSortMenu(false);
       }
+      if (convertRef.current && !convertRef.current.contains(target)) {
+        onConvertModeChange(false);
+      }
       if (logoRef.current && !logoRef.current.contains(target)) {
         setShowLogoMenu(false);
       }
@@ -93,10 +224,55 @@ const Header: React.FC<HeaderProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [onConvertModeChange]);
+
+  useEffect(() => {
+    if (!isDraggingConvert) return;
+
+    const handlePointerMove = (event: PointerEvent) => {
+      updateConvertPosition(event.clientX);
+    };
+
+    const handlePointerUp = () => {
+      setIsDraggingConvert(false);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [convertPosition, isDraggingConvert, updateConvertPosition]);
+
+  useEffect(() => {
+    if (!isConvertModeOpen) return;
+
+    const syncThumbPosition = () => {
+      const metrics = getConvertMetrics();
+      if (!metrics) return;
+
+      setConvertThumbX(
+        getThumbXForPosition(metrics.dotPositions, convertPosition)
+      );
+    };
+
+    syncThumbPosition();
+
+    const resizeObserver = new ResizeObserver(syncThumbPosition);
+    if (convertTrackRef.current) {
+      resizeObserver.observe(convertTrackRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [convertPosition, getConvertMetrics, isConvertModeOpen]);
 
   return (
-    <header className="header">
+    <header
+      className={`header ${isConvertModeOpen ? 'header--convert-open' : ''}`}>
       <div className="header-inner">
         <div className="header-logo-menu" ref={logoRef}>
           <button
@@ -125,11 +301,59 @@ const Header: React.FC<HeaderProps> = ({
           )}
         </div>
         <div className="header-btns">
-          <div className="header-btn__plus-wrapper">
-            <button
-              className="header-btn header-btn__plus"
-              aria-label="Toggle search"
-              onClick={toggleSearch}></button>
+          <div className="header-btns__inner">
+            <div>
+              <button
+                className="header-btn header-btn__plus"
+                aria-label="Toggle search"
+                onClick={toggleSearch}></button>
+            </div>
+            <div className="header-convert" ref={convertRef}>
+              <button
+                className={`header-btn header-btn__convert ${
+                  isConvertModeOpen ? 'active' : ''
+                }`}
+                aria-label="Toggle convert panel"
+                onClick={toggleConvertMenu}></button>
+              {isConvertModeOpen && (
+                <div className="header-convert__menu">
+                  <div className="header-convert__scale">
+                    <span className="header-convert__scale-label">0</span>
+                    <span className="header-convert__scale-label">6</span>
+                    <span className="header-convert__scale-label">12</span>
+                    <span className="header-convert__scale-label">18</span>
+                    <span className="header-convert__scale-label">24</span>
+                  </div>
+                  <div
+                    className="header-convert__track"
+                    ref={convertTrackRef}
+                    onPointerDown={handleConvertTrackPointerDown}>
+                    {convertStops.map((hour, index) => (
+                      <span
+                        key={hour}
+                        ref={(element) => {
+                          convertDotRefs.current[index] = element;
+                        }}
+                        className={`header-convert__dot ${
+                          index % 2 === 0 ? 'hour' : ''
+                        }`}></span>
+                    ))}
+                    <span
+                      className={`header-convert__thumb ${
+                        isDraggingConvert ? 'dragging' : ''
+                      }`}
+                      style={{
+                        left: `${convertThumbX - 18}px`,
+                      }}
+                      onPointerDown={handleConvertPointerDown}>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div className="header-btns__inner">
             <div className="header-sort" ref={sortRef}>
@@ -185,10 +409,10 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
-      {showSearch && (
+      {isSearchOpen && (
         <Searchbar
           addTimezone={addTimezone}
-          onSelect={() => setShowSearch(false)}
+          onSelect={() => onSearchOpenChange(false)}
         />
       )}
     </header>
