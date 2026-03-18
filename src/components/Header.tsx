@@ -1,8 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import '@styles/Header.scss';
 import Searchbar from '../components/Searchbar';
 import { TimezoneInfo } from './Timezone';
-import type { AddTimezoneResult, HourFormat, SortMode } from '../App';
+import type {
+  AddTimezoneResult,
+  ConvertPosition,
+  HourFormat,
+  SortMode,
+} from '../App';
 
 interface HeaderProps {
   addTimezone: (timezone: TimezoneInfo) => AddTimezoneResult;
@@ -12,6 +17,8 @@ interface HeaderProps {
   onToggleHourFormat: () => void;
   isConvertModeOpen: boolean;
   onConvertModeChange: (isOpen: boolean) => void;
+  convertPosition: ConvertPosition;
+  onConvertPositionChange: (position: ConvertPosition) => void;
   isSearchOpen: boolean;
   onSearchOpenChange: (isOpen: boolean) => void;
 }
@@ -24,6 +31,8 @@ const Header: React.FC<HeaderProps> = ({
   onToggleHourFormat,
   isConvertModeOpen,
   onConvertModeChange,
+  convertPosition,
+  onConvertPositionChange,
   isSearchOpen,
   onSearchOpenChange,
 }) => {
@@ -33,7 +42,6 @@ const Header: React.FC<HeaderProps> = ({
   const convertRef = useRef<HTMLDivElement>(null);
   const convertTrackRef = useRef<HTMLDivElement>(null);
   const convertDotRefs = useRef<Array<HTMLSpanElement | null>>([]);
-  const [convertPosition, setConvertPosition] = useState(6);
   const [convertThumbX, setConvertThumbX] = useState(0);
   const [isDraggingConvert, setIsDraggingConvert] = useState(false);
   const toggleSearch = () => {
@@ -51,10 +59,21 @@ const Header: React.FC<HeaderProps> = ({
     onConvertModeChange(false);
     setShowSortMenu((prev) => !prev);
   };
+  const getLocalConvertPosition = (): number => {
+    const now = new Date();
+    const totalHours =
+      now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+
+    // Each dot spans 3 hours across the 24-hour timeline.
+    return totalHours / 3;
+  };
   const toggleConvertMenu = () => {
     onSearchOpenChange(false);
     setShowLogoMenu(false);
     setShowSortMenu(false);
+    if (!isConvertModeOpen) {
+      onConvertPositionChange(getLocalConvertPosition());
+    }
     onConvertModeChange(!isConvertModeOpen);
   };
   const toggleLogoMenu = () => {
@@ -64,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({
     setShowLogoMenu((prev) => !prev);
   };
 
-  const getConvertMetrics = () => {
+  const getConvertMetrics = useCallback(() => {
     const track = convertTrackRef.current;
     if (!track) return null;
 
@@ -85,9 +104,9 @@ const Header: React.FC<HeaderProps> = ({
       maxX: dotPositions[dotPositions.length - 1],
       dotPositions,
     };
-  };
+  }, []);
 
-  const updateConvertPosition = (clientX: number) => {
+  const updateConvertPosition = useCallback((clientX: number) => {
     const metrics = getConvertMetrics();
     if (!metrics) return;
 
@@ -101,17 +120,38 @@ const Header: React.FC<HeaderProps> = ({
       { index: 0, distance: Number.POSITIVE_INFINITY }
     );
 
-    if (nearestDot.distance <= 12) {
-      setConvertPosition(nearestDot.index);
-      setConvertThumbX(metrics.dotPositions[nearestDot.index]);
-      return;
+    let nextX = clampedX;
+
+    // Apply a soft magnetic pull near markers without forcing a full snap.
+    if (nearestDot.distance <= 14) {
+      const snapX = metrics.dotPositions[nearestDot.index];
+      const pullStrength = (14 - nearestDot.distance) / 14;
+      nextX = clampedX + (snapX - clampedX) * pullStrength * 0.45;
     }
 
     const progress =
-      (clampedX - metrics.minX) / (metrics.maxX - metrics.minX || 1);
+      (nextX - metrics.minX) / (metrics.maxX - metrics.minX || 1);
     const rawIndex = progress * (convertStops.length - 1);
-    setConvertPosition(rawIndex);
-    setConvertThumbX(clampedX);
+    onConvertPositionChange(rawIndex);
+    setConvertThumbX(nextX);
+  }, [convertStops.length, getConvertMetrics, onConvertPositionChange]);
+
+  const getThumbXForPosition = (
+    dotPositions: number[],
+    position: number
+  ): number => {
+    const lowerIndex = Math.floor(position);
+    const upperIndex = Math.ceil(position);
+    const lowerX = dotPositions[lowerIndex] ?? dotPositions[0] ?? 0;
+    const upperX =
+      dotPositions[upperIndex] ?? dotPositions[dotPositions.length - 1] ?? 0;
+
+    if (lowerIndex === upperIndex) {
+      return lowerX;
+    }
+
+    const progress = position - lowerIndex;
+    return lowerX + (upperX - lowerX) * progress;
   };
 
   const handleConvertPointerDown = (
@@ -184,7 +224,7 @@ const Header: React.FC<HeaderProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [onConvertModeChange]);
 
   useEffect(() => {
     if (!isDraggingConvert) return;
@@ -195,13 +235,6 @@ const Header: React.FC<HeaderProps> = ({
 
     const handlePointerUp = () => {
       setIsDraggingConvert(false);
-      const roundedIndex = Math.round(convertPosition);
-      setConvertPosition(roundedIndex);
-
-      const metrics = getConvertMetrics();
-      if (metrics) {
-        setConvertThumbX(metrics.dotPositions[roundedIndex]);
-      }
     };
 
     window.addEventListener('pointermove', handlePointerMove);
@@ -211,22 +244,23 @@ const Header: React.FC<HeaderProps> = ({
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [convertPosition, isDraggingConvert]);
+  }, [convertPosition, isDraggingConvert, updateConvertPosition]);
 
   useEffect(() => {
     if (!isConvertModeOpen) return;
 
-    const syncThumbToNearestDot = () => {
+    const syncThumbPosition = () => {
       const metrics = getConvertMetrics();
       if (!metrics) return;
 
-      const roundedIndex = Math.round(convertPosition);
-      setConvertThumbX(metrics.dotPositions[roundedIndex]);
+      setConvertThumbX(
+        getThumbXForPosition(metrics.dotPositions, convertPosition)
+      );
     };
 
-    syncThumbToNearestDot();
+    syncThumbPosition();
 
-    const resizeObserver = new ResizeObserver(syncThumbToNearestDot);
+    const resizeObserver = new ResizeObserver(syncThumbPosition);
     if (convertTrackRef.current) {
       resizeObserver.observe(convertTrackRef.current);
     }
@@ -234,7 +268,7 @@ const Header: React.FC<HeaderProps> = ({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [convertPosition, isConvertModeOpen]);
+  }, [convertPosition, getConvertMetrics, isConvertModeOpen]);
 
   return (
     <header

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Timezone, { TimezoneInfo } from './Timezone';
 import type {
   AddTimezoneResult,
+  ConvertPosition,
   HourFormat,
   SortMode,
 } from '../App';
@@ -68,6 +69,7 @@ interface TimezoneListProps {
   sortMode: SortMode;
   hourFormat: HourFormat;
   isConvertModeOpen: boolean;
+  convertPosition: ConvertPosition;
 }
 
 const getDateTimeRankInZone = (zone: string): number => {
@@ -109,6 +111,7 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
   sortMode,
   hourFormat,
   isConvertModeOpen,
+  convertPosition,
 }) => {
   const [timezones, setTimezones] = useState<TimezoneInfo[]>(() =>
     loadStoredTimezones()
@@ -277,6 +280,7 @@ const TimezoneList: React.FC<TimezoneListProps> = ({
             zone={tz.zone}
             hourFormat={hourFormat}
             isConvertModeOpen={isConvertModeOpen}
+            convertPosition={convertPosition}
             setting={activeSettingId === tz.id}
             isPinned={pinnedIds.includes(tz.id)}
             toggleSetting={() => toggleSetting(tz.id)}

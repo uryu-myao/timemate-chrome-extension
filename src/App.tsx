@@ -8,6 +8,7 @@ import '@styles/main.scss';
 export type SortMode = 'newest' | 'time' | 'alphabet';
 export type AddTimezoneResult = 'added' | 'duplicate' | 'limit';
 export type HourFormat = '12' | '24';
+export type ConvertPosition = number;
 const SORT_MODE_STORAGE_KEY = 'timemate.sort-mode.v1';
 const HOUR_FORMAT_STORAGE_KEY = 'timemate.hour-format.v1';
 
@@ -16,6 +17,7 @@ function App() {
     ((timezone: TimezoneInfo) => AddTimezoneResult) | null
   >(null);
   const [isConvertModeOpen, setIsConvertModeOpen] = useState(false);
+  const [convertPosition, setConvertPosition] = useState<ConvertPosition>(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>(() => {
     const stored = localStorage.getItem(SORT_MODE_STORAGE_KEY);
@@ -69,6 +71,8 @@ function App() {
         }
         isConvertModeOpen={isConvertModeOpen}
         onConvertModeChange={setIsConvertModeOpen}
+        convertPosition={convertPosition}
+        onConvertPositionChange={setConvertPosition}
         isSearchOpen={isSearchOpen}
         onSearchOpenChange={setIsSearchOpen}
       />
@@ -78,6 +82,7 @@ function App() {
           sortMode={sortMode}
           hourFormat={hourFormat}
           isConvertModeOpen={isConvertModeOpen}
+          convertPosition={convertPosition}
         />
       </div>
     </div>
