@@ -168,6 +168,10 @@
 
     &__meridiem {
       color: var(--color-secondary);
+
+      &--am {
+        color: var(--color-meridiem-am);
+      }
       position: absolute;
       font-family: 'Poppins', serif;
       font-weight: 600;
