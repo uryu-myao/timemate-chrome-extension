@@ -1,5 +1,5 @@
 // Replace this URL with your real Google Form URL before publishing.
-const UNINSTALL_FEEDBACK_URL = 'https://forms.gle/REPLACE_WITH_YOUR_FORM_ID';
+const UNINSTALL_FEEDBACK_URL = 'https://forms.gle/ncZLfTs8RKE59ETC9';
 
 const configureUninstallSurvey = () => {
   chrome.runtime.setUninstallURL(UNINSTALL_FEEDBACK_URL, () => {
