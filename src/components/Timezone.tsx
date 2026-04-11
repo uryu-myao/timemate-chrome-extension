@@ -165,7 +165,7 @@ const Timezone: React.FC<TimezoneProps> = ({
         <div className="timezone-data__location">{timeData.city}</div>
         <div className="timezone-data__time">{timeData.time}</div>
         {(isConvertModeOpen || hourFormat === '12') && timeData.meridiem && (
-          <div className="timezone-data__meridiem">{timeData.meridiem}</div>
+          <div className={`timezone-data__meridiem${timeData.meridiem === 'AM' ? ' timezone-data__meridiem--am' : ''}`}>{timeData.meridiem}</div>
         )}
         {!isConvertModeOpen && (
           <div className="timezone-data__second">{timeData.second}</div>

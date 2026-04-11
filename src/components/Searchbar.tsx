@@ -2,11 +2,34 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import '@styles/Searchbar.scss';
 import type { AddTimezoneResult } from '../App';
 
+function getUtcOffset(zone: string): string {
+  const parts = new Intl.DateTimeFormat('en', {
+    timeZone: zone,
+    timeZoneName: 'shortOffset',
+  }).formatToParts(new Date());
+  const offset = parts.find((p) => p.type === 'timeZoneName')?.value ?? '';
+  return offset.replace('GMT', 'UTC');
+}
+
+function highlightMatch(text: string, query: string) {
+  if (!query.trim()) return text;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark>{text.slice(idx, idx + query.length)}</mark>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
+
 interface SearchResult {
   id: string;
   city: string;
   zone: string;
   country?: string;
+  countryCode?: string;
   region?: string;
 }
 
@@ -14,12 +37,14 @@ interface SearchApiItem {
   city?: string;
   timezone?: string;
   country?: string;
+  countryCode?: string;
   region?: string;
 }
 
 interface OpenMeteoResultItem {
   name?: string;
   country?: string;
+  country_code?: string;
   admin1?: string;
   timezone?: string;
 }
@@ -46,8 +71,10 @@ const Searchbar: React.FC<SearchbarProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [showLimitTip, setShowLimitTip] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const activeRequestIdRef = useRef(0);
 
   const fetchCityTimezones = useCallback(
@@ -66,6 +93,7 @@ const Searchbar: React.FC<SearchbarProps> = ({
               city: item.name,
               timezone: item.timezone,
               country: item.country,
+              countryCode: item.country_code,
               region: item.admin1,
             }))
           : [];
@@ -88,6 +116,7 @@ const Searchbar: React.FC<SearchbarProps> = ({
             city: item.city as string,
             zone: item.timezone as string,
             country: item.country,
+            countryCode: item.countryCode,
             region: item.region,
           }));
 
@@ -115,6 +144,8 @@ const Searchbar: React.FC<SearchbarProps> = ({
     setSearchTerm(value);
     setShowResults(!!value.trim());
     setShowLimitTip(false);
+    setActiveIndex(-1);
+    if (value.trim()) setIsLoading(true);
   };
 
   const handleSelectCity = (result: SearchResult) => {
@@ -128,7 +159,43 @@ const Searchbar: React.FC<SearchbarProps> = ({
     setSearchTerm('');
     setShowResults(false);
     setResults([]);
+    setActiveIndex(-1);
     onSelect?.();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showResults || results.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((prev) => {
+        const next = Math.min(prev + 1, results.length - 1);
+        scrollItemIntoView(next);
+        return next;
+      });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((prev) => {
+        const next = Math.max(prev - 1, 0);
+        scrollItemIntoView(next);
+        return next;
+      });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeIndex >= 0 && activeIndex < results.length) {
+        handleSelectCity(results[activeIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowResults(false);
+      setActiveIndex(-1);
+    }
+  };
+
+  const scrollItemIntoView = (index: number) => {
+    const list = listRef.current;
+    if (!list) return;
+    const item = list.children[index] as HTMLElement | undefined;
+    item?.scrollIntoView({ block: 'nearest' });
   };
 
   useEffect(() => {
@@ -160,7 +227,6 @@ const Searchbar: React.FC<SearchbarProps> = ({
     const controller = new AbortController();
 
     const delaySearch = setTimeout(async () => {
-      setIsLoading(true);
       const searchResults = await fetchCityTimezones(
         searchTerm,
         controller.signal
@@ -190,31 +256,46 @@ const Searchbar: React.FC<SearchbarProps> = ({
           placeholder="Search cities..."
           value={searchTerm}
           onChange={handleSearch}
+          onKeyDown={handleKeyDown}
+          autoComplete="off"
         />
       </div>
 
       {showResults && (
         <div className="search-results">
-          {results.length > 0 ? (
-            <ul>
-              {results.map((result) => (
+          {isLoading ? (
+            <div className="search-loading">
+              <span className="search-loading__spinner" />
+              Searching…
+            </div>
+          ) : results.length > 0 ? (
+            <ul ref={listRef}>
+              {results.map((result, index) => (
                 <li
                   key={result.id}
                   onClick={() => handleSelectCity(result)}
-                  className="search-result__item">
-                  <span className="city-name">
-                    {result.city}
-                    {result.region ? `, ${result.region}` : ''}
-                    {result.country ? `, ${result.country}` : ''}
-                  </span>
-                  <span className="timezone-name">
-                    {result.zone.replace(/_/g, ' ')}
-                  </span>
+                  className={`search-result__item${index === activeIndex ? ' search-result__item--active' : ''}`}>
+                  <div className="search-result__info">
+                    <span className="city-name">
+                      {highlightMatch(result.city, searchTerm)}
+                      {result.region ? `, ${result.region}` : ''}
+                      {result.country ? `, ${result.country}` : ''}
+                    </span>
+                    <span className="timezone-name">
+                      {getUtcOffset(result.zone)}
+                    </span>
+                  </div>
+                  {result.countryCode && (
+                    <img
+                      className="country-flag"
+                      src={`https://flagcdn.com/${result.countryCode.toLowerCase()}.svg`}
+                      alt={result.country ?? result.countryCode}
+                      loading="lazy"
+                    />
+                  )}
                 </li>
               ))}
             </ul>
-          ) : isLoading ? (
-            <div className="search-loading">Loading...</div>
           ) : (
             <div className="search-no-results">No cities found</div>
           )}
