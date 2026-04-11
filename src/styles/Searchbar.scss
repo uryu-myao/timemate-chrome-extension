@@ -122,8 +122,9 @@
       letter-spacing: 0.5px;
       padding: 10px 20px;
       display: flex;
-      flex-direction: column;
-      gap: 2px;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
       transition: background-color 0.15s ease-in-out;
 
       &:hover,
@@ -132,10 +133,21 @@
         cursor: pointer;
       }
 
+      .search-result__info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+      }
+
       .city-name {
         font-weight: 600;
         font-size: 18px;
         line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 
         mark {
           background: transparent;
@@ -148,6 +160,14 @@
         font-size: 12px;
         opacity: 0.55;
         font-weight: 400;
+      }
+
+      .country-flag {
+        flex-shrink: 0;
+        width: 32px;
+        height: auto;
+        border-radius: 3px;
+        opacity: 0.9;
       }
     }
   }

@@ -29,6 +29,7 @@ interface SearchResult {
   city: string;
   zone: string;
   country?: string;
+  countryCode?: string;
   region?: string;
 }
 
@@ -36,12 +37,14 @@ interface SearchApiItem {
   city?: string;
   timezone?: string;
   country?: string;
+  countryCode?: string;
   region?: string;
 }
 
 interface OpenMeteoResultItem {
   name?: string;
   country?: string;
+  country_code?: string;
   admin1?: string;
   timezone?: string;
 }
@@ -90,6 +93,7 @@ const Searchbar: React.FC<SearchbarProps> = ({
               city: item.name,
               timezone: item.timezone,
               country: item.country,
+              countryCode: item.country_code,
               region: item.admin1,
             }))
           : [];
@@ -112,6 +116,7 @@ const Searchbar: React.FC<SearchbarProps> = ({
             city: item.city as string,
             zone: item.timezone as string,
             country: item.country,
+            countryCode: item.countryCode,
             region: item.region,
           }));
 
@@ -270,14 +275,24 @@ const Searchbar: React.FC<SearchbarProps> = ({
                   key={result.id}
                   onClick={() => handleSelectCity(result)}
                   className={`search-result__item${index === activeIndex ? ' search-result__item--active' : ''}`}>
-                  <span className="city-name">
-                    {highlightMatch(result.city, searchTerm)}
-                    {result.region ? `, ${result.region}` : ''}
-                    {result.country ? `, ${result.country}` : ''}
-                  </span>
-                  <span className="timezone-name">
-                    {getUtcOffset(result.zone)}
-                  </span>
+                  <div className="search-result__info">
+                    <span className="city-name">
+                      {highlightMatch(result.city, searchTerm)}
+                      {result.region ? `, ${result.region}` : ''}
+                      {result.country ? `, ${result.country}` : ''}
+                    </span>
+                    <span className="timezone-name">
+                      {getUtcOffset(result.zone)}
+                    </span>
+                  </div>
+                  {result.countryCode && (
+                    <img
+                      className="country-flag"
+                      src={`https://flagcdn.com/${result.countryCode.toLowerCase()}.svg`}
+                      alt={result.country ?? result.countryCode}
+                      loading="lazy"
+                    />
+                  )}
                 </li>
               ))}
             </ul>

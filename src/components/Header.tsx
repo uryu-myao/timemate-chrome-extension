@@ -44,6 +44,7 @@ const Header: React.FC<HeaderProps> = ({
   const convertDotRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const [convertThumbX, setConvertThumbX] = useState(0);
   const [isDraggingConvert, setIsDraggingConvert] = useState(false);
+  const [convertInitialPosition, setConvertInitialPosition] = useState(0);
   const toggleSearch = () => {
     setShowSortMenu(false);
     onConvertModeChange(false);
@@ -72,9 +73,17 @@ const Header: React.FC<HeaderProps> = ({
     setShowLogoMenu(false);
     setShowSortMenu(false);
     if (!isConvertModeOpen) {
-      onConvertPositionChange(getLocalConvertPosition());
+      const localPos = getLocalConvertPosition();
+      onConvertPositionChange(localPos);
+      setConvertInitialPosition(localPos);
     }
     onConvertModeChange(!isConvertModeOpen);
+  };
+
+  const handleResetConverter = () => {
+    const localPos = getLocalConvertPosition();
+    onConvertPositionChange(localPos);
+    setConvertInitialPosition(localPos);
   };
   const toggleLogoMenu = () => {
     onSearchOpenChange(false);
@@ -317,6 +326,13 @@ const Header: React.FC<HeaderProps> = ({
                 onClick={toggleConvertMenu}></button>
               {isConvertModeOpen && (
                 <div className="header-convert__menu">
+                  {Math.abs(convertPosition - convertInitialPosition) > 0.05 && (
+                    <button
+                      className="header-convert__reset"
+                      aria-label="Reset converter to current time"
+                      onClick={handleResetConverter}
+                    />
+                  )}
                   <div className="header-convert__scale">
                     <span className="header-convert__scale-label">0</span>
                     <span className="header-convert__scale-label">6</span>
