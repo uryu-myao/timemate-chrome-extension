@@ -53,6 +53,7 @@ const Header: React.FC<HeaderProps> = ({
   const [showSortMenu, setShowSortMenu] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
   const [showLogoMenu, setShowLogoMenu] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const logoRef = useRef<HTMLDivElement>(null);
   const toggleSortMenu = () => {
     onSearchOpenChange(false);
@@ -90,6 +91,14 @@ const Header: React.FC<HeaderProps> = ({
     setShowSortMenu(false);
     onConvertModeChange(false);
     setShowLogoMenu((prev) => !prev);
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(
+      'https://chromewebstore.google.com/detail/gmjjpjccmmdnainbbgchlnkhmgckcmik'
+    );
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2000);
   };
 
   const getConvertMetrics = useCallback(() => {
@@ -290,12 +299,22 @@ const Header: React.FC<HeaderProps> = ({
             onClick={toggleLogoMenu}></button>
           {showLogoMenu && (
             <div className="header-logo-menu__menu">
+              <button className="header-logo-menu__item header-logo-menu__item--share" onClick={handleShare}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M7 8.5V1.5M7 1.5L4.5 4M7 1.5L9.5 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 9.5V12H12V9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {shareCopied ? 'Copied!' : 'Share TimeMate'}
+              </button>
               <button className="header-logo-menu__item">
                 <a
                   href=" https://chromewebstore.google.com/detail/gmjjpjccmmdnainbbgchlnkhmgckcmik/reviews"
                   target="_blank"
                   rel="noopener noreferrer">
-                  Rate us <span>★★★★★</span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+                    <path d="M7 1l1.545 3.13L12 4.636l-2.5 2.435.59 3.44L7 8.886l-3.09 1.625.59-3.44L2 4.636l3.455-.505L7 1z"/>
+                  </svg>
+                  Rate Us
                 </a>
               </button>
               <button className="header-logo-menu__item">
@@ -303,6 +322,9 @@ const Header: React.FC<HeaderProps> = ({
                   href="https://forms.gle/ncZLfTs8RKE59ETC9"
                   target="_blank"
                   rel="noopener noreferrer">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                    <path d="M1.5 2.5a1 1 0 011-1h9a1 1 0 011 1v6a1 1 0 01-1 1H5l-3.5 2.5V2.5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                  </svg>
                   Send Feedback
                 </a>
               </button>

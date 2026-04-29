@@ -78,6 +78,7 @@
       font-family: 'Poppins', serif;
       font-size: 14px;
       font-weight: 600;
+      color: var(--color-font-timezone);
       cursor: pointer;
 
       &:hover {
@@ -85,13 +86,16 @@
       }
 
       a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         color: var(--color-font-timezone);
       }
 
-      span {
-        display: inline-block;
-        font-size: 10px;
-        letter-spacing: 1px;
+      &--share {
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
     }
   }
