@@ -186,43 +186,9 @@ const Header: React.FC<HeaderProps> = ({
     setIsDraggingConvert(true);
   };
 
-  // Theme functionality ==============================
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    const systemPreferce = window.matchMedia('(prefers-color-scheme: dark)')
-      .matches
-      ? 'dark'
-      : 'light';
-    return systemPreferce;
-  });
-
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
-    const systemThemeChangeListener = (e: MediaQueryListEvent) => {
-      setTheme(e.matches ? 'dark' : 'light');
-    };
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    mediaQuery.addEventListener('change', systemThemeChangeListener);
-    return () =>
-      mediaQuery.removeEventListener('change', systemThemeChangeListener);
+    document.documentElement.setAttribute('data-theme', 'dark');
   }, []);
-
-  // save theme to local storage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setTheme(savedTheme as 'light' | 'dark');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -440,10 +406,6 @@ const Header: React.FC<HeaderProps> = ({
               onClick={onToggleHourFormat}>
               {hourFormat === '12' ? '24' : '12'}
             </button>
-            <button
-              className="header-btn header-btn__theme"
-              aria-label="Toggle theme"
-              onClick={toggleTheme}></button>
           </div>
         </div>
       </div>

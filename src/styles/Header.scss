@@ -305,11 +305,6 @@
       background-image: var(--icon-convert);
     }
 
-    &__theme {
-      background-size: 15px;
-      background-image: var(--icon-theme);
-    }
-
     &__sort {
       background-size: 15px;
       background-image: var(--icon-sort);
@@ -325,11 +320,5 @@
       text-align: center;
       text-transform: uppercase;
     }
-  }
-}
-
-[data-theme='dark'] {
-  .header-btn__theme {
-    background-size: 20px;
   }
 }

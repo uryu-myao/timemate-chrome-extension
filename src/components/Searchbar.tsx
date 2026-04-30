@@ -31,6 +31,8 @@ interface SearchResult {
   country?: string;
   countryCode?: string;
   region?: string;
+  lat?: number;
+  lon?: number;
 }
 
 interface SearchApiItem {
@@ -39,6 +41,8 @@ interface SearchApiItem {
   country?: string;
   countryCode?: string;
   region?: string;
+  lat?: number;
+  lon?: number;
 }
 
 interface OpenMeteoResultItem {
@@ -47,6 +51,8 @@ interface OpenMeteoResultItem {
   country_code?: string;
   admin1?: string;
   timezone?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface OpenMeteoSearchResponse {
@@ -95,6 +101,8 @@ const Searchbar: React.FC<SearchbarProps> = ({
               country: item.country,
               countryCode: item.country_code,
               region: item.admin1,
+              lat: item.latitude,
+              lon: item.longitude,
             }))
           : [];
 
@@ -118,6 +126,8 @@ const Searchbar: React.FC<SearchbarProps> = ({
             country: item.country,
             countryCode: item.countryCode,
             region: item.region,
+            lat: item.lat,
+            lon: item.lon,
           }));
 
         // Open-Meteo may return duplicates with same city/timezone.

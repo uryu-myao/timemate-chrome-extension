@@ -1,37 +1,6 @@
 :root {
   --container-padding-horizontal: 18px;
   --color-opacity: rgba(255, 255, 255, 0);
-}
-
-[data-theme='light'] {
-  --color-primary: #f8f3ec;
-  --color-secondary: #ffa400;
-  --color-font-timezone: #452c16;
-  --color-bg-info: rgba(255, 164, 0, 0.12);
-  --color-bg-timezone: white;
-  --color-border: white;
-  --color-hover: rgba(255, 255, 255, 1);
-  --logo: url('/icons/logo-light.svg');
-  --icon-plus: url('/icons/icon-plus-light.svg');
-  --icon-convert: url('/icons/icon-convert-light.svg');
-  --icon-theme: url('/icons/icon-theme-light.svg');
-  --icon-setting: url('/icons/icon-setting-light.svg');
-  --icon-search: url('/icons/icon-search-light.svg');
-  --icon-sort: url('/icons/icon-sort-light.svg');
-  --icon-reset: url('/icons/icon-reset-light.svg');
-  --color-division: #f6e1b5;
-  --color-warning: #d88e10;
-  --color-pin: #7269dc;
-  --color-meridiem-am: #7ec9e0;
-  --gradient-converter: linear-gradient(
-    90deg,
-    #8fa5b8 0%,
-    #eed098 50%,
-    #8fa5b8 100%
-  );
-}
-
-[data-theme='dark'] {
   --color-primary: #2c2b32;
   --color-secondary: #ffa400;
   --color-font-timezone: white;
@@ -39,10 +8,9 @@
   --color-bg-timezone: #141416;
   --color-border: rgba(0, 170, 255, 0.1);
   --color-hover: rgba(255, 255, 255, 0.2);
-  --logo: url('/icons/logo-dark.svg');
+  --logo: url('/icons/logos/logo-header.svg');
   --icon-plus: url('/icons/icon-plus-dark.svg');
   --icon-convert: url('/icons/icon-convert-dark.svg');
-  --icon-theme: url('/icons/icon-theme-dark.svg');
   --icon-setting: url('/icons/icon-setting-dark.svg');
   --icon-search: url('/icons/icon-search-dark.svg');
   --icon-sort: url('/icons/icon-sort-dark.svg');
@@ -50,7 +18,7 @@
   --color-division: #45444d;
   --color-warning: #b27610;
   --color-pin: #5d55c4;
-  --color-meridiem-am: #7ec9e0;
+  --color-meridiem-am: rgb(255, 255, 255, 0.6);
   --gradient-converter: linear-gradient(
     90deg,
     #23212a 0%,
