@@ -78,6 +78,7 @@
       font-family: 'Poppins', serif;
       font-size: 14px;
       font-weight: 600;
+      color: var(--color-font-timezone);
       cursor: pointer;
 
       &:hover {
@@ -85,13 +86,16 @@
       }
 
       a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         color: var(--color-font-timezone);
       }
 
-      span {
-        display: inline-block;
-        font-size: 10px;
-        letter-spacing: 1px;
+      &--share {
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
     }
   }
@@ -301,11 +305,6 @@
       background-image: var(--icon-convert);
     }
 
-    &__theme {
-      background-size: 15px;
-      background-image: var(--icon-theme);
-    }
-
     &__sort {
       background-size: 15px;
       background-image: var(--icon-sort);
@@ -321,11 +320,5 @@
       text-align: center;
       text-transform: uppercase;
     }
-  }
-}
-
-[data-theme='dark'] {
-  .header-btn__theme {
-    background-size: 20px;
   }
 }

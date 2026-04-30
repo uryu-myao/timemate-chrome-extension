@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import '@styles/_reset.css';
 import '@styles/Timezone.scss';
 import SettingButton from './SettingButton';
@@ -10,6 +10,8 @@ export interface TimezoneInfo {
   id: string;
   city: string;
   zone: string;
+  lat?: number;
+  lon?: number;
 }
 
 interface TimezoneProps extends TimezoneInfo {
@@ -24,10 +26,46 @@ interface TimezoneProps extends TimezoneInfo {
   unpinTimezone: () => void;
 }
 
+interface SunTimes {
+  sunriseMinutes: number;
+  sunsetMinutes: number;
+  sunriseStr: string;
+  sunsetStr: string;
+  date: string;
+}
+
+type TimeOfDay = 'night' | 'dawn' | 'day' | 'twilight';
+
+const TWILIGHT_MINUTES = 45;
+
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return h >>> 0;
+}
+
+function makeStars(id: string, count: number) {
+  let s = hashStr(id);
+  const rand = () => {
+    s = (Math.imul(1664525, s) + 1013904223) | 0;
+    return (s >>> 0) / 0x100000000;
+  };
+  return Array.from({ length: count }, () => ({
+    cx: rand() * 372 + 4,
+    cy: rand() * 74 + 4,
+    r:  rand() * 0.5 + 0.5,
+    o:  rand() * 0.4 + 0.55,
+  }));
+}
+
 const Timezone: React.FC<TimezoneProps> = ({
   id,
   city,
   zone,
+  lat,
+  lon,
   hourFormat,
   isConvertModeOpen,
   convertPosition,
@@ -38,6 +76,8 @@ const Timezone: React.FC<TimezoneProps> = ({
   pinTimezone,
   unpinTimezone,
 }) => {
+  const stars = useMemo(() => makeStars(id, 20), [id]);
+
   const [timeData, setTimeData] = useState({
     city,
     offset: '',
@@ -48,8 +88,9 @@ const Timezone: React.FC<TimezoneProps> = ({
     date: '',
     month: '',
   });
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('day');
+  const sunTimesRef = useRef<SunTimes | null>(null);
 
-  // ✅ 计算并格式化时区偏移量
   const getTimezoneOffsetString = (timeZone: string): string => {
     try {
       const now = new Date();
@@ -62,11 +103,105 @@ const Timezone: React.FC<TimezoneProps> = ({
       return tzOffset
         ? tzOffset.replace('GMT', 'UTC').replace(':00', '')
         : 'N/A';
-    } catch (error) {
-      console.error('⚠️ 获取时区偏移量失败:', error);
+    } catch {
       return 'N/A';
     }
   };
+
+  const computeTimeOfDay = (st: SunTimes | null, refDate: Date = new Date()): TimeOfDay => {
+    if (!st) return 'night';
+
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: zone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(refDate);
+
+    const h = parseInt(parts.find((p) => p.type === 'hour')?.value ?? '0');
+    const m = parseInt(parts.find((p) => p.type === 'minute')?.value ?? '0');
+    const nowMin = h * 60 + m;
+
+    if (
+      nowMin >= st.sunriseMinutes + TWILIGHT_MINUTES &&
+      nowMin <= st.sunsetMinutes - TWILIGHT_MINUTES
+    ) {
+      return 'day';
+    }
+    if (
+      nowMin >= st.sunriseMinutes - TWILIGHT_MINUTES &&
+      nowMin <= st.sunriseMinutes + TWILIGHT_MINUTES
+    ) {
+      return 'dawn';
+    }
+    if (
+      nowMin >= st.sunsetMinutes - TWILIGHT_MINUTES &&
+      nowMin <= st.sunsetMinutes + TWILIGHT_MINUTES
+    ) {
+      return 'twilight';
+    }
+    return 'night';
+  };
+
+  useEffect(() => {
+    if (!lat || !lon) return;
+
+    const fetchSunTimes = async () => {
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: zone }).format(new Date());
+      if (sunTimesRef.current?.date === today) return;
+
+      const cacheKey = `timemate.sun.${zone}.${today}`;
+
+      // Hit cache first — zero network latency on repeat opens
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const result = JSON.parse(cached) as SunTimes;
+          sunTimesRef.current = result;
+          setTimeOfDay(computeTimeOfDay(result));
+          return;
+        } catch { /* corrupt entry, fall through to fetch */ }
+      }
+
+      try {
+        const res = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset&timezone=${encodeURIComponent(zone)}&forecast_days=1`
+        );
+        const data = await res.json() as {
+          daily?: { sunrise?: string[]; sunset?: string[] };
+        };
+        const sunriseRaw = data.daily?.sunrise?.[0]?.split('T')[1] ?? '';
+        const sunsetRaw = data.daily?.sunset?.[0]?.split('T')[1] ?? '';
+        if (!sunriseRaw || !sunsetRaw) return;
+
+        const [sh, sm] = sunriseRaw.split(':').map(Number);
+        const [dh, dm] = sunsetRaw.split(':').map(Number);
+
+        const result: SunTimes = {
+          sunriseMinutes: sh * 60 + sm,
+          sunsetMinutes: dh * 60 + dm,
+          sunriseStr: sunriseRaw,
+          sunsetStr: sunsetRaw,
+          date: today,
+        };
+        sunTimesRef.current = result;
+        localStorage.setItem(cacheKey, JSON.stringify(result));
+        // Evict yesterday's entry to keep storage tidy
+        const yesterday = new Intl.DateTimeFormat('en-CA', { timeZone: zone }).format(
+          new Date(Date.now() - 86400000)
+        );
+        localStorage.removeItem(`timemate.sun.${zone}.${yesterday}`);
+        setTimeOfDay(computeTimeOfDay(result));
+      } catch {
+        // silently ignore fetch errors
+      }
+    };
+
+    fetchSunTimes();
+    const interval = setInterval(fetchSunTimes, 60 * 60 * 1000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lat, lon, zone]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -142,8 +277,10 @@ const Timezone: React.FC<TimezoneProps> = ({
         week: targetParts.weekday,
         date: targetParts.dayNumber.toString(),
         month: targetParts.monthShort,
-        offset: getTimezoneOffsetString(zone), // ✅ 添加 offset 更新
+        offset: getTimezoneOffsetString(zone),
       }));
+
+      setTimeOfDay(computeTimeOfDay(sunTimesRef.current, sourceDate));
     };
 
     updateTime();
@@ -153,19 +290,25 @@ const Timezone: React.FC<TimezoneProps> = ({
 
     const intervalId = setInterval(updateTime, 1000);
     return () => clearInterval(intervalId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zone, hourFormat, isConvertModeOpen, convertPosition]);
 
   return (
     <div
       data-timezone-id={id}
-      className={`timezone ${setting ? 'setting' : ''} ${
-        isPinned ? 'pinned' : ''
-      }`}>
+      className={`timezone ${setting ? 'setting' : ''} ${isPinned ? 'pinned' : ''} timezone--${timeOfDay}${isConvertModeOpen ? ' timezone--converting' : ''}`}>
       <div className="timezone-inner">
+        {timeOfDay === 'night' && !isConvertModeOpen && (
+          <svg className="timezone-stars" aria-hidden="true">
+            {stars.map((s, i) => (
+              <circle key={i} cx={s.cx} cy={s.cy} r={s.r} fill="white" fillOpacity={s.o} />
+            ))}
+          </svg>
+        )}
         <div className="timezone-data__location">{timeData.city}</div>
         <div className="timezone-data__time">{timeData.time}</div>
         {(isConvertModeOpen || hourFormat === '12') && timeData.meridiem && (
-          <div className={`timezone-data__meridiem${timeData.meridiem === 'AM' ? ' timezone-data__meridiem--am' : ''}`}>{timeData.meridiem}</div>
+          <div className={`timezone-data__meridiem${timeData.meridiem === 'AM' ? ' timezone-data__meridiem--am' : ''}${isConvertModeOpen ? ' timezone-data__meridiem--convert' : ''}`}>{timeData.meridiem}</div>
         )}
         {!isConvertModeOpen && (
           <div className="timezone-data__second">{timeData.second}</div>
@@ -178,7 +321,7 @@ const Timezone: React.FC<TimezoneProps> = ({
           </p>
           <p>
             {isConvertModeOpen ? (
-              <span>Converter Mode</span>
+              <span className="timezone-data__convert-label">Converter Mode</span>
             ) : (
               <span>
                 <span className="timezone-data__week">{timeData.week}</span>
