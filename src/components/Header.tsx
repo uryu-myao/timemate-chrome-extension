@@ -280,7 +280,7 @@ const Header: React.FC<HeaderProps> = ({
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
                     <path d="M7 1l1.545 3.13L12 4.636l-2.5 2.435.59 3.44L7 8.886l-3.09 1.625.59-3.44L2 4.636l3.455-.505L7 1z"/>
                   </svg>
-                  Rate Us
+                  Back Me with 5 Stars
                 </a>
               </button>
               <button className="header-logo-menu__item">
