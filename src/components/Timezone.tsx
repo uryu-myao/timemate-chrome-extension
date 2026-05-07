@@ -109,8 +109,6 @@ const Timezone: React.FC<TimezoneProps> = ({
   };
 
   const computeTimeOfDay = (st: SunTimes | null, refDate: Date = new Date()): TimeOfDay => {
-    if (!st) return 'night';
-
     const parts = new Intl.DateTimeFormat('en-US', {
       timeZone: zone,
       hour: '2-digit',
@@ -122,21 +120,25 @@ const Timezone: React.FC<TimezoneProps> = ({
     const m = parseInt(parts.find((p) => p.type === 'minute')?.value ?? '0');
     const nowMin = h * 60 + m;
 
+    // Fall back to generic 6:00 / 18:00 when no sun data is available (no lat/lon).
+    const sunriseMinutes = st?.sunriseMinutes ?? 360;
+    const sunsetMinutes = st?.sunsetMinutes ?? 1080;
+
     if (
-      nowMin >= st.sunriseMinutes + TWILIGHT_MINUTES &&
-      nowMin <= st.sunsetMinutes - TWILIGHT_MINUTES
+      nowMin >= sunriseMinutes + TWILIGHT_MINUTES &&
+      nowMin <= sunsetMinutes - TWILIGHT_MINUTES
     ) {
       return 'day';
     }
     if (
-      nowMin >= st.sunriseMinutes - TWILIGHT_MINUTES &&
-      nowMin <= st.sunriseMinutes + TWILIGHT_MINUTES
+      nowMin >= sunriseMinutes - TWILIGHT_MINUTES &&
+      nowMin <= sunriseMinutes + TWILIGHT_MINUTES
     ) {
       return 'dawn';
     }
     if (
-      nowMin >= st.sunsetMinutes - TWILIGHT_MINUTES &&
-      nowMin <= st.sunsetMinutes + TWILIGHT_MINUTES
+      nowMin >= sunsetMinutes - TWILIGHT_MINUTES &&
+      nowMin <= sunsetMinutes + TWILIGHT_MINUTES
     ) {
       return 'twilight';
     }
